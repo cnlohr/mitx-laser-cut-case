@@ -3,7 +3,6 @@
 
 #define ETCH "stroke=\"#ff0000\" fill=\"none\" stroke-width=\".05mm\""
 #define CUT  "stroke=\"#0000ff\" fill=\"none\" stroke-width=\".05mm\""
-#define MATERIAL_THICKNESS 8.6
 
 //CNLohr's Super Basic SVG Toolkit.
 int inpath = 0;
@@ -29,6 +28,7 @@ void Normalize2d( float * out, float * in ) { float mag = 1./sqrt( in[0] * in[0]
 void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 
+#define MATERIAL_THICKNESS 8.6
 #define TOOTH_WIDTH 30
 #define EAR 0.5
 #define SCREW_WIDTH 3.5
@@ -37,21 +37,36 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define NUT_HEIGHT   2.9
 #define T_DEPTH     6
 
+// apply to both sides of inside cuts.
+#define CUT_CLEARANCE .15
+
 void DrawBox( const char * type, float x1, float y1, float x2, float y2, float ear )
 {
 	PathStart( type );
 	PathM( x1, y1 );
-	PathL( x1-ear, y1-ear );
-	PathL( x1, y1 );
+	if( ear > 0 )
+	{
+		PathL( x1-ear, y1-ear );
+		PathL( x1, y1 );
+	}
 	PathL( x2, y1 );
-	PathL( x2+ear, y1-ear );	
-	PathL( x2, y1 );
+	if( ear > 0 )
+	{
+		PathL( x2+ear, y1-ear );	
+		PathL( x2, y1 );
+	}
 	PathL( x2, y2 );
-	PathL( x2+ear, y2+ear );
-	PathL( x2, y2 );
+	if( ear > 0 )
+	{
+		PathL( x2+ear, y2+ear );
+		PathL( x2, y2 );
+	}
 	PathL( x1, y2 );
-	PathL( x1-ear, y2+ear );
-	PathL( x1, y2 );
+	if( ear > 0 )
+	{
+		PathL( x1-ear, y2+ear );
+		PathL( x1, y2 );
+	}
 	PathL( x1, y1 );
 	PathClose();
 }
