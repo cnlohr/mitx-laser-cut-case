@@ -28,17 +28,22 @@ void Normalize2d( float * out, float * in ) { float mag = 1./sqrt( in[0] * in[0]
 void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 
-#define MATERIAL_THICKNESS 8.6
+#define MATERIAL_THICKNESS 8.8
 #define TOOTH_WIDTH 30
 #define EAR 0.5
+#define M3_SCREW_WIDTH 2.7
 #define SCREW_WIDTH 3.5
 #define SCREW_EXTRA 4.0
-#define NUT_WIDTH   10.0
+#define NUT_WIDTH   8.5
 #define NUT_HEIGHT   2.9
 #define T_DEPTH     6
 
 // apply to both sides of inside cuts.
-#define CUT_CLEARANCE .15
+#define CUT_CLEARANCE -.1
+
+#define DO_CASE_1 0
+#define DO_CASE_2 0
+#define DO_CASE_3 1
 
 void DrawBox( const char * type, float x1, float y1, float x2, float y2, float ear )
 {
@@ -71,11 +76,491 @@ void DrawBox( const char * type, float x1, float y1, float x2, float y2, float e
 	PathClose();
 }
 
+	
+void PathLXForm( float cx, float cy, float dx, float dy, float dirx, float diry )
+{
+	float newx = dirx * dy - diry * dx;
+	float newy = diry * dy + dirx * dx;
+
+	PathL( cx+newx, cy+newy );
+}
+
+// Insert a T bolt
+void InsertT( float cx, float cy, float dirx, float diry, float screw_width, float nut_width, float nut_height, float tdepth )
+{
+	PathLXForm( cx, cy, -(screw_width/2), 0, dirx, diry );
+	PathLXForm( cx, cy, -(screw_width/2), tdepth, dirx, diry );
+	PathLXForm( cx, cy, -(nut_width)/2.0, tdepth, dirx, diry  );
+	PathLXForm( cx, cy, -(nut_width)/2.0, tdepth+nut_height, dirx, diry  );
+	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height, dirx, diry  );
+	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height+SCREW_EXTRA, dirx, diry  );
+	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height+SCREW_EXTRA, dirx, diry  );
+	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height, dirx, diry  );
+	PathLXForm( cx, cy, +(nut_width)/2.0, tdepth+nut_height, dirx, diry  );
+	PathLXForm( cx, cy, +(nut_width)/2.0, tdepth, dirx, diry  );
+	PathLXForm( cx, cy, +(screw_width/2), tdepth, dirx, diry  );
+	PathLXForm( cx, cy, +(screw_width/2), 0, dirx, diry );
+}
+	
+void FillHexagons( const char * path, float cx, float cy, float sx, float sy, float HEXSIZE )
+{
+	const float wspace = 1.732 * HEXSIZE;
+	const float hspace = 2 * HEXSIZE;
+	float fx, fy;
+	int nrhexx = (int)((sx)/wspace);
+	int nrhexxandahalf = (int)((sx)/wspace+0.5)-nrhexx;
+	int nrhexy = (int)((sy)/hspace);
+	int ix, iy;
+	for( iy = -nrhexy/2; iy < (nrhexy+1)/2; iy++ )
+	for( ix = -nrhexx/2; ix < (nrhexx+1)/2; ix++ )
+	{
+		if( ( iy & 1 ) && (ix == (nrhexx+1)/2-1) && !nrhexxandahalf ) continue;
+		float tx = cx + ix * hspace + ((iy&1)?hspace*.5:0);
+		float ty = cy + iy * wspace;
+		PathStart( path );
+		float wx, wy;
+		wx = tx-wspace/2; wy = ty-hspace/4; PathM( wx, wy );
+		wx = tx; wy = ty-hspace/2;          PathL( wx, wy );
+		wx = tx+wspace/2; wy = ty-hspace/4; PathL( wx, wy );
+
+		wx = tx+wspace/2; wy = ty+hspace/4; PathL( wx, wy );
+		wx = tx; wy = ty+hspace/2;          PathL( wx, wy );
+		wx = tx-wspace/2; wy = ty+hspace/4; PathL( wx, wy );
+
+		PathClose();
+	}
+}
+
 void DrawTest();
+void DrawCase();
 
 int main()
 {
-	DrawTest();
+	//DrawTest();
+	DrawCase();
+}
+
+void DrawCase()
+{
+	float cy = 0;
+	float cx = 0;
+	int i;
+	//Motherboard Tray
+	centerx = MATERIAL_THICKNESS+CUT_CLEARANCE+1;
+	centery = 1;
+	
+	const float mb_tongue_mm = 40;
+	const float mb_tray_length = 314;
+	const float itx_x_offset = 1;
+	const float mb_tray_width = 172;
+	const int num_mb_tongues = 3;
+	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-5;
+	const float top_tongue_offset = MATERIAL_THICKNESS/2+5;
+	const int num_leds_edge = 18;
+	const float led_mb_center_x = 86;
+	const float led_mb_center_y = 87;
+	const float led_spacing = 6.95;
+	const float led_width = 4.1;
+	const float led_nooj = 7;
+	
+	const float foot_height = 10;
+	
+	const float sfx_width = 125;
+	const float sfx_height = 64;
+	const float sfx_length = 100;
+	const float sfx_slop = 0.5;
+	
+	// Hole ready for use but not used in current design.
+	const float hole_center_plate_for_mobox = mb_tray_width - 10;
+	const float hole_center_plate_for_moboy = 175; //Also used for placment.
+	
+	
+	// Note GPU cutout does not contain compensation.
+	const float gpu_thick = 54;     //XXX TODO: Add padding around GPU?
+	const float gpu_height = 123.5;
+	const float material_above_gpu = 6;
+	const float gpu_offset_x = 18;
+	
+	const float gpu_base_over_mobo_plate = 87; // Measured
+	float whole_crossbrace_height = material_above_gpu+gpu_thick + gpu_base_over_mobo_plate;
+	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
+
+	StartSVG( 809.6, 457 );
+	
+	if( DO_CASE_1 )
+	{
+		
+		//MOTHERBOARD
+		DrawBox( ETCH, sfx_slop, mb_tray_length  - sfx_slop - sfx_width, sfx_slop + sfx_length, mb_tray_length - sfx_slop, 0 );
+
+		//Signature
+		PathStart( ETCH );
+		cx = 130;
+		cy = 290;
+		float tx, ty;
+		float ixsx = .5;
+		float ixsy = .45;
+		tx = cx - 20*ixsx; ty = cy;  PathM( tx, ty );
+		tx = cx - 10*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+		tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
+		tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
+		tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+		tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
+		tx = cx - 10*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
+		tx = cx - 20*ixsx; ty = cy;  PathL( tx, ty );
+		PathClose();
+		// https://www.silverstonetek.com/techtalk/11008/pic-9.png
+		Circle( CUT, itx_x_offset+6.35, 10.16, M3_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35+157.48, 10.16+22.86, M3_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35+157.48, 10.16+154.94, M3_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35, 10.16+154.94, M3_SCREW_WIDTH/2 );
+
+		Circle( CUT, hole_center_plate_for_mobox, hole_center_plate_for_moboy, SCREW_WIDTH/2 );
+
+		FillHexagons( CUT, 86, 95, 110, 150, 9 );
+		//Row between mobo and psu
+		//FillHexagons( CUT, 95, 174, 125, 20 );
+		
+		// Add LEDs
+		int j;
+		for( j = 0; j < 4; j++ )
+		for( i = 0; i < num_leds_edge; i++ )
+		{
+			float leda = i * led_spacing;
+			float ledb = leda + led_width;
+			float led_line_width = (num_leds_edge-1) * led_spacing + led_width;
+			switch( j )
+			{
+			case 0:
+				DrawBox( CUT, led_mb_center_x-led_line_width/2+leda, led_mb_center_y-led_line_width/2-led_width/2-led_nooj, 
+							  led_mb_center_x-led_line_width/2+ledb, led_mb_center_y-led_line_width/2+led_width/2-led_nooj, 0 );
+				break;
+			case 1:
+				DrawBox( CUT, led_mb_center_x+led_line_width/2-led_width/2+led_nooj, led_mb_center_x-led_line_width/2+leda+(led_spacing-led_width)/2, 
+							  led_mb_center_x+led_line_width/2+led_width/2+led_nooj, led_mb_center_x-led_line_width/2+ledb+(led_spacing-led_width)/2, 0 );
+				break;
+			case 2:
+				DrawBox( CUT, led_mb_center_x+led_line_width/2-leda, led_mb_center_y+led_line_width/2-led_width/2+led_nooj, 
+							  led_mb_center_x+led_line_width/2-ledb, led_mb_center_y+led_line_width/2+led_width/2+led_nooj, 0 );
+				break;
+			case 3:
+				DrawBox( CUT, led_mb_center_x-led_line_width/2-led_width/2-led_nooj, led_mb_center_x+led_line_width/2-leda+(led_spacing-led_width)/2, 
+							  led_mb_center_x-led_line_width/2+led_width/2-led_nooj, led_mb_center_x+led_line_width/2-ledb+(led_spacing-led_width)/2, 0 );
+				break;
+			}
+		}
+
+		// Screw for bottom sheet.
+		Circle( CUT,  sfx_length+sfx_slop*2+mb_tongue_mm+10, bottom_tongue_offset, SCREW_WIDTH/2 );
+		DrawBox( CUT, sfx_length+sfx_slop*2-CUT_CLEARANCE, bottom_tongue_offset - MATERIAL_THICKNESS/2.0-CUT_CLEARANCE, 
+					  sfx_length+sfx_slop*2+mb_tongue_mm+CUT_CLEARANCE, bottom_tongue_offset + MATERIAL_THICKNESS/2.0+CUT_CLEARANCE, EAR );
+
+
+		PathStart( CUT );
+		PathM( cx = 0, cy = 0 );
+		PathL( cx, cy+=mb_tongue_spacing/2 );
+		for( i = cx; i < num_mb_tongues; i++ )
+		{
+			PathL( cx+EAR, cy+EAR );
+			PathL( cx, cy );
+			PathL( cx-MATERIAL_THICKNESS, cy );
+			PathL( cx-MATERIAL_THICKNESS, cy += mb_tongue_mm );
+			PathL( cx, cy );
+			PathL( cx+EAR, cy-EAR );
+			PathL( cx, cy );
+			if( i != num_mb_tongues-1 )
+			{
+				cy += mb_tongue_spacing/2;
+				InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+				cy += mb_tongue_spacing/2;
+			}
+			else
+				cy += mb_tongue_spacing/2;
+			PathL( cx, cy );
+		}
+		
+		// Add center tongue for rear holding tonuge.
+		// This was when I thought we'd have an end-mate.  This is probably
+		// a bad idea, as it requires orthogonal screws to maintain capture.
+		/*
+		PathL( cx = sfx_length+sfx_slop-CUT_CLEARANCE, cy );
+		PathL( cx, cy-=MATERIAL_THICKNESS+CUT_CLEARANCE );
+		PathL( cx-EAR, cy-EAR );
+		PathL( cx, cy );
+		PathL( cx+=CUT_CLEARANCE*2+mb_tongue_mm, cy );
+		PathL( cx+EAR, cy-EAR );
+		PathL( cx, cy );
+		PathL( cx, cy+=MATERIAL_THICKNESS+CUT_CLEARANCE );
+		*/
+
+		PathL( cx = mb_tray_width, cy );
+		PathL( cx, cy-=mb_tongue_spacing/2 );
+		for( i = 0; i < num_mb_tongues; i++ )
+		{
+			PathL( cx-EAR, cy-EAR );
+			PathL( cx, cy );
+			cx += MATERIAL_THICKNESS;
+			PathL( cx, cy );
+			cy -= mb_tongue_mm;
+			PathL( cx, cy );
+			cx -= MATERIAL_THICKNESS;
+			PathL( cx, cy );
+			PathL( cx-EAR, cy+EAR );
+			PathL( cx, cy );
+			if( i != num_mb_tongues-1 )
+			{
+				cy -= mb_tongue_spacing/2;
+				InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+				cy -= mb_tongue_spacing/2;
+			}
+			else
+				cy -= mb_tongue_spacing/2;
+			PathL( cx, cy );
+		}
+		PathL( 0, 0 );
+		PathClose( );
+	}
+	
+	if( DO_CASE_2 )
+	{
+		int plate;
+		for( plate = 0; plate < 3; plate++ )
+		{
+			// Bottom plate.
+			if( plate == 0 )
+			{
+				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
+				centery = mb_tray_length+2;
+			}
+			else if( plate == 1 )
+			{
+				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
+				centery = 21;
+			}
+			else
+			{
+				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
+				centery = 126+5;
+			}
+			
+			const float handle_bump = 25;
+			const float handle_width = 60;
+			const float handle_radius = 10;
+			const float handle_offset = 2;
+			// Handle
+			if( plate != 1 )
+			{
+				float phi = 0;
+				PathStart( CUT );
+				for( ; phi < 3.14159*2; phi += 0.001 )
+				{
+					float cx = cos( phi )*handle_radius;
+					float cy = sin( phi )*handle_radius+handle_offset;
+					if( cx < 0 )
+						cx -= handle_width/2;
+					else
+						cx += handle_width/2;
+					PathL( cx + mb_tray_width/2, cy - 10 );
+				}
+				PathClose();
+			}
+			
+			// This has a large cutout for the GPU and the PSU and slots into the sides.
+			DrawBox( CUT, gpu_offset_x, material_above_gpu, 
+						  gpu_offset_x+gpu_height, material_above_gpu+gpu_thick, 0 );
+
+			PathStart( CUT );
+			float crossbrace_tongue_center = whole_crossbrace_height/2;
+			PathM( cx = 0, cy = 0 );
+			cy+=crossbrace_tongue_center/2;
+			InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+			cy += crossbrace_tongue_center/2-mb_tongue_mm/2;
+			PathL( cx, cy );
+			PathL( cx+EAR, cy+EAR );
+			PathL( cx, cy );
+			PathL( cx-=MATERIAL_THICKNESS, cy );
+			PathL( cx, cy += mb_tongue_mm );
+			PathL( cx+=MATERIAL_THICKNESS, cy );
+			PathL( cx, cy = whole_crossbrace_height - sfx_height );
+
+			if( plate == 1 && 0 ) // Should center plate connect to mobo?
+			{
+				cx = mb_tray_width - 20;
+				PathL( cx, cy );
+				cy = whole_crossbrace_height;
+				PathL( cx, cy ); // At bottom
+				
+				cx += 10;
+				
+				//Put bolt retainer in here.
+				InsertT( cx, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+			}
+			
+			if( plate == 2 )
+			{
+				cx+=sfx_length+sfx_slop*2;
+				PathL( cx, cy );
+				cy = whole_crossbrace_height;
+				PathL( cx, cy ); // At bottom
+				PathL( cx, cy+=MATERIAL_THICKNESS );
+				PathL( cx+=mb_tongue_mm, cy );
+				PathL( cx, cy-=MATERIAL_THICKNESS );
+				PathL( cx-EAR, cy-EAR );
+				PathL( cx, cy );
+				
+				//Put bolt retainer in here.
+				InsertT( sfx_length+sfx_slop*2+mb_tongue_mm+10, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+			}
+			PathL( cx = mb_tray_width, cy );
+			PathL( cx, cy=crossbrace_tongue_center+mb_tongue_mm/2 );
+			
+			if( plate == 2 )
+			{
+				PathL( cx-EAR, cy-EAR );
+				PathL( cx, cy );
+			}
+
+			PathL( cx +=MATERIAL_THICKNESS, cy );
+			PathL( cx, cy-=mb_tongue_mm );
+			PathL( cx -=MATERIAL_THICKNESS, cy );
+			PathL( cx-EAR, cy+EAR );
+			PathL( cx, cy );
+			
+			cy = crossbrace_tongue_center/2;
+			InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+
+			cy = 0;
+			PathL( cx, cy );
+			
+			if( plate != 1 )
+			{
+				//Add handle.
+				float handle_hang = 0;
+				cx-=handle_hang;
+				PathL( cx, cy );
+				cx-=handle_bump;
+				cy-=handle_bump;
+				PathL( cx, cy );
+				cx-=mb_tray_width-handle_bump*2-handle_hang*2;
+				PathL( cx, cy );
+				cx-=handle_bump;
+				cy+=handle_bump;
+				PathL( cx, cy );
+			}
+			
+			PathClose( );
+
+			FillHexagons( CUT, 94, 71, 145, 20, 8 );
+			if( plate == 2 )
+			{
+				FillHexagons( CUT, 134, 113, 50, 70, 8 );
+			}
+		}
+	}
+	
+	if( DO_CASE_3 )
+	{
+		int side;
+		for( side = 0; side < 2; side++ )
+		{
+			float cx = 0;
+			float cy = 0;
+			centerx = 375+side*(whole_crossbrace_height+25);
+			centery = 1;
+			//whole_crossbrace_height
+			PathStart( CUT );
+			PathM( cx, cy );
+			cx+=whole_crossbrace_height + MATERIAL_THICKNESS;
+			PathL( cx, cy );
+			cy += mb_tongue_spacing/2;
+			cy += foot_height/2;
+			for( i = 0; i < num_mb_tongues; i++ )
+			{
+				//mb_tongue_mm
+				//mb_tongue_spacing
+				// const float foot_height = 20;
+				// const float foot_length = 30;
+				cy -= foot_height*1.5;
+				PathL( cx, cy );
+				cx += foot_height;
+				cy += foot_height;
+				PathL( cx, cy );
+				cy += mb_tongue_mm;
+				PathL( cx, cy );
+				cx -= foot_height;
+				cy += foot_height;
+				PathL( cx, cy );
+				cy -= foot_height/2;
+				
+				cy += mb_tongue_spacing;
+			}
+			cy -= foot_height/2;
+			cy -= mb_tongue_spacing/2;
+			PathL( cx, cy );
+			cx=0;
+			PathL( cx, cy );
+			PathClose();
+
+			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*4/4, SCREW_WIDTH/2 );
+			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*8/4, SCREW_WIDTH/2 );
+			
+			for( i = 0; i < num_mb_tongues; i++ )
+			{
+				float ts = (mb_tray_length) / num_mb_tongues;
+				cy = (ts/2) + ts * i;
+				cx = whole_crossbrace_height;
+				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
+				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
+				DrawBox( CUT, cx, cy-twplusclear, cx+matplusclear*2, cy+twplusclear, EAR );
+			}
+
+			for( i = 0; i < 4; i++ )
+			{
+				float yplace = 0;
+				switch( i )
+				{
+					case 0: yplace = top_tongue_offset; break;
+					case 1: yplace = bottom_tongue_offset; break;
+					case 2: yplace = hole_center_plate_for_moboy; break;
+					case 3: yplace = (top_tongue_offset + bottom_tongue_offset)/2; break;
+				}
+				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
+				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
+				cx = whole_crossbrace_height/2;
+				cy = yplace;
+				DrawBox( CUT, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
+				Circle( CUT, whole_crossbrace_height/4, cy, SCREW_WIDTH/2 );
+			}
+			
+			if( side == 0 )
+			{
+				//Holes for PSU
+				float cx = whole_crossbrace_height;
+				float cy = mb_tray_length;
+				Circle( CUT, cx-5.9, cy-6.2, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-32, cy-6.2, M3_SCREW_WIDTH/2 );
+				//Circle( CUT, cx-58.1, cy-6.2, M3_SCREW_WIDTH/2 ); // This one is covered.
+				Circle( CUT, cx-5.9, cy-119.2, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-32, cy-119.2, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-58.1, cy-119.2, M3_SCREW_WIDTH/2 );
+				cx = whole_crossbrace_height-64/2;
+				cy = mb_tray_length - 125.5/2;
+				DrawBox( CUT, cx-56/2, cy-104/2, cx+56/2, cy+104/2, 0 );
+			}
+			
+			if( side == 0 )
+			{
+				FillHexagons( CUT, (whole_crossbrace_height-64/2-56/2)/2.0+8, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 65, 130, 9 );
+			}
+			else
+			{
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 120, 130, 9 );
+			}
+			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+8, 120, 150, 9 );
+		}
+	}
+
+	EndSVG();	
 }
 
 void DrawTest()
@@ -150,9 +635,9 @@ void DrawTest()
 	// LEDs
 	for( y = 0; y < 27; y++ )
 	{
-		float oy = y * 1000.0/144.0;
-		float yo = 4.2 + y * .1;
-		DrawBox( CUT, 140, y+oy+55, 145, y+oy+55+yo, 0 );
+		float oy = y * 6.95;
+		float yo = 4.40;//4.2 + y * .1;
+		DrawBox( CUT, 140, y+oy+55, 144, y+oy+55+yo, 0 );
 	}
 	PathStart( CUT );
 	PathM( 155, 0 );
