@@ -28,21 +28,22 @@ void Normalize2d( float * out, float * in ) { float mag = 1./sqrt( in[0] * in[0]
 void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 
-#define MATERIAL_THICKNESS 8.8
+#define MATERIAL_THICKNESS 8.9
 #define TOOTH_WIDTH 30
 #define EAR 0.5
 #define M3_SCREW_WIDTH 2.7
 #define SCREW_WIDTH 3.5
-#define SCREW_EXTRA 4.0
+#define SCREW_IN_WIDTH 3.1
+#define SCREW_EXTRA 3.0
 #define NUT_WIDTH   8.5
 #define NUT_HEIGHT   2.9
-#define T_DEPTH     6
+#define T_DEPTH     5.2
 
 // apply to both sides of inside cuts.
 #define CUT_CLEARANCE -.1
 
-#define DO_CASE_1 0
-#define DO_CASE_2 0
+#define DO_CASE_1 1
+#define DO_CASE_2 1
 #define DO_CASE_3 1
 
 void DrawBox( const char * type, float x1, float y1, float x2, float y2, float ear )
@@ -86,15 +87,15 @@ void PathLXForm( float cx, float cy, float dx, float dy, float dirx, float diry 
 }
 
 // Insert a T bolt
-void InsertT( float cx, float cy, float dirx, float diry, float screw_width, float nut_width, float nut_height, float tdepth )
+void InsertT( float cx, float cy, float dirx, float diry, float screw_width, float nut_width, float nut_height, float tdepth, float screw_extra )
 {
 	PathLXForm( cx, cy, -(screw_width/2), 0, dirx, diry );
 	PathLXForm( cx, cy, -(screw_width/2), tdepth, dirx, diry );
 	PathLXForm( cx, cy, -(nut_width)/2.0, tdepth, dirx, diry  );
 	PathLXForm( cx, cy, -(nut_width)/2.0, tdepth+nut_height, dirx, diry  );
 	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height, dirx, diry  );
-	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height+SCREW_EXTRA, dirx, diry  );
-	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height+SCREW_EXTRA, dirx, diry  );
+	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height+screw_extra, dirx, diry  );
+	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height+screw_extra, dirx, diry  );
 	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height, dirx, diry  );
 	PathLXForm( cx, cy, +(nut_width)/2.0, tdepth+nut_height, dirx, diry  );
 	PathLXForm( cx, cy, +(nut_width)/2.0, tdepth, dirx, diry  );
@@ -102,7 +103,7 @@ void InsertT( float cx, float cy, float dirx, float diry, float screw_width, flo
 	PathLXForm( cx, cy, +(screw_width/2), 0, dirx, diry );
 }
 	
-void FillHexagons( const char * path, float cx, float cy, float sx, float sy, float HEXSIZE )
+void FillHexagons( const char * path, float cx, float cy, float sx, float sy, float HEXSIZE, int alternate )
 {
 	const float wspace = 1.732 * HEXSIZE;
 	const float hspace = 2 * HEXSIZE;
@@ -114,8 +115,11 @@ void FillHexagons( const char * path, float cx, float cy, float sx, float sy, fl
 	for( iy = -nrhexy/2; iy < (nrhexy+1)/2; iy++ )
 	for( ix = -nrhexx/2; ix < (nrhexx+1)/2; ix++ )
 	{
-		if( ( iy & 1 ) && (ix == (nrhexx+1)/2-1) && !nrhexxandahalf ) continue;
-		float tx = cx + ix * hspace + ((iy&1)?hspace*.5:0);
+		int is_alternate = (iy&1);
+		float altval = 1;
+		float altspace = 0;
+		if( (( iy & 1 )^alternate) && (ix == ((nrhexx+1)/2-1) && !nrhexxandahalf ) ) continue;
+		float tx = cx + ix * hspace + (is_alternate?hspace*.5*altval:0) + ((alternate && !is_alternate)?hspace:0);
 		float ty = cy + iy * wspace;
 		PathStart( path );
 		float wx, wy;
@@ -164,22 +168,26 @@ void DrawCase()
 	const float led_nooj = 7;
 	
 	const float foot_height = 10;
-	
 	const float sfx_width = 125;
 	const float sfx_height = 64;
 	const float sfx_length = 100;
 	const float sfx_slop = 0.5;
+	const float back_plate_height_from_tray = 54.5;
 	
 	// Hole ready for use but not used in current design.
 	const float hole_center_plate_for_mobox = mb_tray_width - 10;
 	const float hole_center_plate_for_moboy = 175; //Also used for placment.
 	
+	const float back_valence_width = 12.3;
+	const float back_valence_depth = 35;
 	
 	// Note GPU cutout does not contain compensation.
 	const float gpu_thick = 54;     //XXX TODO: Add padding around GPU?
 	const float gpu_height = 123.5;
 	const float material_above_gpu = 6;
-	const float gpu_offset_x = 18;
+	const float gpu_offset_x = 31; // Was 18
+	const float gpu_rail_mount_from_top = 30.4;
+	const float gpu_brace_bar_width = 64;
 	
 	const float gpu_base_over_mobo_plate = 87; // Measured
 	float whole_crossbrace_height = material_above_gpu+gpu_thick + gpu_base_over_mobo_plate;
@@ -217,7 +225,7 @@ void DrawCase()
 
 		Circle( CUT, hole_center_plate_for_mobox, hole_center_plate_for_moboy, SCREW_WIDTH/2 );
 
-		FillHexagons( CUT, 86, 95, 110, 150, 9 );
+		FillHexagons( CUT, 86, 95, 110, 150, 9, 0 );
 		//Row between mobo and psu
 		//FillHexagons( CUT, 95, 174, 125, 20 );
 		
@@ -271,7 +279,7 @@ void DrawCase()
 			if( i != num_mb_tongues-1 )
 			{
 				cy += mb_tongue_spacing/2;
-				InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+				InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cy += mb_tongue_spacing/2;
 			}
 			else
@@ -310,7 +318,7 @@ void DrawCase()
 			if( i != num_mb_tongues-1 )
 			{
 				cy -= mb_tongue_spacing/2;
-				InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+				InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cy -= mb_tongue_spacing/2;
 			}
 			else
@@ -340,13 +348,13 @@ void DrawCase()
 			else
 			{
 				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
-				centery = 126+5;
+				centery = 126+6;
 			}
 			
-			const float handle_bump = 25;
-			const float handle_width = 60;
-			const float handle_radius = 10;
-			const float handle_offset = 2;
+			const float handle_bump = 27;
+			const float handle_width = 56;
+			const float handle_radius = 11;
+			const float handle_offset = 1;
 			// Handle
 			if( plate != 1 )
 			{
@@ -366,14 +374,67 @@ void DrawCase()
 			}
 			
 			// This has a large cutout for the GPU and the PSU and slots into the sides.
-			DrawBox( CUT, gpu_offset_x, material_above_gpu, 
+			if( plate == 0 )
+			{
+				const float edge_card_offset_y = 7;
+				const float edge_card_depth = 15;
+				const float edge_card_bottom_bump = 1;
+				PathStart( CUT );
+				cx = gpu_offset_x;
+				cy = material_above_gpu;
+				PathM( cx, cy );
+				cy += gpu_thick-edge_card_offset_y;
+				PathL( cx, cy );
+				cx -= edge_card_depth;
+				PathL( cx, cy );
+				cy += edge_card_offset_y-edge_card_bottom_bump;
+				PathL( cx, cy );
+				cx += edge_card_depth;
+				PathL( cx, cy );
+				cy += edge_card_bottom_bump;
+				PathL( cx, cy );
+				cx += gpu_height;
+				PathL( cx, cy );
+				cy -= gpu_thick;
+				PathL( cx, cy );
+		
+				PathClose();
+				
+				float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top + MATERIAL_THICKNESS/2;
+				
+				// material_above_gpu and gpu_thick
+				float gpu_center_line = material_above_gpu+gpu_thick/2;
+
+				Circle( CUT, backplate_mount_lateral, gpu_center_line-gpu_brace_bar_width/2, SCREW_WIDTH/2 );
+				Circle( CUT, backplate_mount_lateral, gpu_center_line+gpu_brace_bar_width/2, SCREW_WIDTH/2 );
+			}
+			else
+			{
+				DrawBox( CUT, gpu_offset_x, material_above_gpu, 
 						  gpu_offset_x+gpu_height, material_above_gpu+gpu_thick, 0 );
+			}
+
+			if( plate == 2 )
+			{
+				FillHexagons( CUT, 96, 71, 145, 20, 8, 0 );
+				FillHexagons( CUT, 136, 113, 58, 70, 8, 1 );
+			}
+			else if( plate == 1 )
+			{
+				FillHexagons( CUT, 94, 71, 145, 20, 8, 0 );
+			}
+			else
+			{
+				// Back tray
+				FillHexagons( CUT, 75, 77, 170, 24, 10.7, 1 );
+				//FillHexagons( CUT, 48, 71, 110, 24, 12, 1 );
+			}
 
 			PathStart( CUT );
 			float crossbrace_tongue_center = whole_crossbrace_height/2;
 			PathM( cx = 0, cy = 0 );
 			cy+=crossbrace_tongue_center/2;
-			InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+			InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			cy += crossbrace_tongue_center/2-mb_tongue_mm/2;
 			PathL( cx, cy );
 			PathL( cx+EAR, cy+EAR );
@@ -381,7 +442,18 @@ void DrawCase()
 			PathL( cx-=MATERIAL_THICKNESS, cy );
 			PathL( cx, cy += mb_tongue_mm );
 			PathL( cx+=MATERIAL_THICKNESS, cy );
-			PathL( cx, cy = whole_crossbrace_height - sfx_height );
+			
+			float height_from_board_bottom;
+			if( plate == 0 )
+			{
+				height_from_board_bottom = back_plate_height_from_tray;
+			}
+			else
+			{
+				height_from_board_bottom = sfx_height;
+			}
+			
+			PathL( cx, cy = whole_crossbrace_height - height_from_board_bottom );
 
 			if( plate == 1 && 0 ) // Should center plate connect to mobo?
 			{
@@ -393,7 +465,7 @@ void DrawCase()
 				cx += 10;
 				
 				//Put bolt retainer in here.
-				InsertT( cx, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+				InsertT( cx, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			}
 			
 			if( plate == 2 )
@@ -409,9 +481,24 @@ void DrawCase()
 				PathL( cx, cy );
 				
 				//Put bolt retainer in here.
-				InsertT( sfx_length+sfx_slop*2+mb_tongue_mm+10, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+				InsertT( sfx_length+sfx_slop*2+mb_tongue_mm+10, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			}
-			PathL( cx = mb_tray_width, cy );
+
+			if( plate == 0 )
+			{
+				cy+=back_valence_depth;
+				PathL( cx, cy );
+				cx+=back_valence_width;
+				PathL( cx, cy );
+				cy-=back_valence_depth;
+				PathL( cx, cy );
+				PathL( cx = mb_tray_width, cy );
+			}
+			else
+			{
+				PathL( cx = mb_tray_width, cy );
+			}
+
 			PathL( cx, cy=crossbrace_tongue_center+mb_tongue_mm/2 );
 			
 			if( plate == 2 )
@@ -419,6 +506,7 @@ void DrawCase()
 				PathL( cx-EAR, cy-EAR );
 				PathL( cx, cy );
 			}
+			
 
 			PathL( cx +=MATERIAL_THICKNESS, cy );
 			PathL( cx, cy-=mb_tongue_mm );
@@ -427,7 +515,7 @@ void DrawCase()
 			PathL( cx, cy );
 			
 			cy = crossbrace_tongue_center/2;
-			InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH );
+			InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 			cy = 0;
 			PathL( cx, cy );
@@ -449,13 +537,56 @@ void DrawCase()
 			}
 			
 			PathClose( );
-
-			FillHexagons( CUT, 94, 71, 145, 20, 8 );
-			if( plate == 2 )
-			{
-				FillHexagons( CUT, 134, 113, 50, 70, 8 );
-			}
 		}
+		
+		
+		// GPU Mounting Bar
+		centerx = 310;
+		centery = 340;
+		
+		float support_material_outside_t = 7;
+		float mounting_bar_thick = 12.5;
+		float mounting_bar_extra = 6.7;
+		
+		// 11.5 and 32 from edge of GPU.
+		float gpu_center_line = gpu_brace_bar_width/2;
+		float gpu_edge = gpu_center_line - gpu_thick/2;
+		//Circle( CUT, mounting_bar_thick/2, gpu_edge, SCREW_WIDTH/2 );
+		Circle( CUT, -(gpu_edge+11.5),mounting_bar_thick/2, SCREW_IN_WIDTH/2 );
+		Circle( CUT, -(gpu_edge+32  ),mounting_bar_thick/2, SCREW_IN_WIDTH/2 );
+
+		PathStart( CUT );
+		cx = 0;
+		cy = 0;
+		PathM( -cy, cx );
+		cy = gpu_brace_bar_width+support_material_outside_t;
+		PathL( -cy, cx );
+		cx += mounting_bar_thick;  // crossbar depth
+		cx += mounting_bar_extra;
+		PathL( -cy, cx );
+		cy -= support_material_outside_t;
+		InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
+		cy -= 4.8;
+		PathL( -cy, cx );
+		cx -= mounting_bar_extra;
+		PathL( -cy, cx );
+		cy -= gpu_brace_bar_width-4.8*2;
+		PathL( -cy, cx );
+		cx += mounting_bar_extra;
+		PathL( -cy, cx );
+		cy -= 4.8;
+		InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
+		cy -= support_material_outside_t;
+		PathL( -cy, cx );
+		cx -= mounting_bar_thick; // crossbar depth
+		cx -= mounting_bar_extra;
+		PathL( -cy, cx );
+		cx = 0;
+		cy = 0;
+		PathL( -cy, cx );
+		PathClose();
+		
+
 	}
 	
 	if( DO_CASE_3 )
@@ -467,39 +598,6 @@ void DrawCase()
 			float cy = 0;
 			centerx = 375+side*(whole_crossbrace_height+25);
 			centery = 1;
-			//whole_crossbrace_height
-			PathStart( CUT );
-			PathM( cx, cy );
-			cx+=whole_crossbrace_height + MATERIAL_THICKNESS;
-			PathL( cx, cy );
-			cy += mb_tongue_spacing/2;
-			cy += foot_height/2;
-			for( i = 0; i < num_mb_tongues; i++ )
-			{
-				//mb_tongue_mm
-				//mb_tongue_spacing
-				// const float foot_height = 20;
-				// const float foot_length = 30;
-				cy -= foot_height*1.5;
-				PathL( cx, cy );
-				cx += foot_height;
-				cy += foot_height;
-				PathL( cx, cy );
-				cy += mb_tongue_mm;
-				PathL( cx, cy );
-				cx -= foot_height;
-				cy += foot_height;
-				PathL( cx, cy );
-				cy -= foot_height/2;
-				
-				cy += mb_tongue_spacing;
-			}
-			cy -= foot_height/2;
-			cy -= mb_tongue_spacing/2;
-			PathL( cx, cy );
-			cx=0;
-			PathL( cx, cy );
-			PathClose();
 
 			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*4/4, SCREW_WIDTH/2 );
 			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*8/4, SCREW_WIDTH/2 );
@@ -550,13 +648,49 @@ void DrawCase()
 			
 			if( side == 0 )
 			{
-				FillHexagons( CUT, (whole_crossbrace_height-64/2-56/2)/2.0+8, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 65, 130, 9 );
+				FillHexagons( CUT, (whole_crossbrace_height-64/2-56/2)/2.0+8, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 65, 130, 9, 0 );
 			}
 			else
 			{
-				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 120, 130, 9 );
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 120, 130, 9, 0 );
 			}
-			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+8, 120, 150, 9 );
+			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+8, 120, 150, 9, 0 );
+			
+			cx = 0;
+			cy = 0;
+			//whole_crossbrace_height
+			PathStart( CUT );
+			PathM( cx, cy );
+			cx+=whole_crossbrace_height + MATERIAL_THICKNESS;
+			PathL( cx, cy );
+			cy += mb_tongue_spacing/2;
+			cy += foot_height/2;
+			for( i = 0; i < num_mb_tongues; i++ )
+			{
+				//mb_tongue_mm
+				//mb_tongue_spacing
+				// const float foot_height = 20;
+				// const float foot_length = 30;
+				cy -= foot_height*1.5;
+				PathL( cx, cy );
+				cx += foot_height;
+				cy += foot_height;
+				PathL( cx, cy );
+				cy += mb_tongue_mm;
+				PathL( cx, cy );
+				cx -= foot_height;
+				cy += foot_height;
+				PathL( cx, cy );
+				cy -= foot_height/2;
+				
+				cy += mb_tongue_spacing;
+			}
+			cy -= foot_height/2;
+			cy -= mb_tongue_spacing/2;
+			PathL( cx, cy );
+			cx=0;
+			PathL( cx, cy );
+			PathClose();
 		}
 	}
 
