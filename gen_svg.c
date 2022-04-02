@@ -1,3 +1,6 @@
+//XXX TODO: 
+// * Either make rear locking handle M3 screw size'd
+// * Or reverse thread 
 #include <stdio.h>
 #include <math.h>
 
@@ -612,15 +615,16 @@ void DrawCase()
 				DrawBox( CUT, cx, cy-twplusclear, cx+matplusclear*2, cy+twplusclear, EAR );
 			}
 
-			for( i = 0; i < 4; i++ )
+			// Change to 4 for alternate slotting patterns.
+			for( i = 0; i < 3; i++ )
 			{
 				float yplace = 0;
 				switch( i )
 				{
 					case 0: yplace = top_tongue_offset; break;
 					case 1: yplace = bottom_tongue_offset; break;
-					case 2: yplace = hole_center_plate_for_moboy; break;
-					case 3: yplace = (top_tongue_offset + bottom_tongue_offset)/2; break;
+					case 3: yplace = hole_center_plate_for_moboy; break; // Not used now.
+					case 2: yplace = (top_tongue_offset + bottom_tongue_offset)/2; break;
 				}
 				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
 				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
@@ -648,13 +652,15 @@ void DrawCase()
 			
 			if( side == 0 )
 			{
-				FillHexagons( CUT, (whole_crossbrace_height-64/2-56/2)/2.0+8, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 65, 130, 9, 0 );
+				FillHexagons( CUT, (whole_crossbrace_height-64/2-56/2)/2.0+8, (hole_center_plate_for_moboy+bottom_tongue_offset)/2-1, 65, 130, 9, 0 );
 			}
 			else
 			{
-				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (hole_center_plate_for_moboy+bottom_tongue_offset)/2, 120, 130, 9, 0 );
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (hole_center_plate_for_moboy+bottom_tongue_offset)/2-1, 120, 130, 9, 0 );
 			}
 			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+8, 120, 150, 9, 0 );
+
+			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, 177-1, 120, 30, 9, 0 );
 			
 			cx = 0;
 			cy = 0;
