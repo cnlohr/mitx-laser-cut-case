@@ -544,51 +544,65 @@ void DrawCase()
 		
 		
 		// GPU Mounting Bar
-		centerx = 310;
-		centery = 340;
-		
-		float support_material_outside_t = 7;
-		float mounting_bar_thick = 12.5;
-		float mounting_bar_extra = 6.7;
-		
-		// 11.5 and 32 from edge of GPU.
-		float gpu_center_line = gpu_brace_bar_width/2;
-		float gpu_edge = gpu_center_line - gpu_thick/2;
-		//Circle( CUT, mounting_bar_thick/2, gpu_edge, SCREW_WIDTH/2 );
-		Circle( CUT, -(gpu_edge+11.5),mounting_bar_thick/2, SCREW_IN_WIDTH/2 );
-		Circle( CUT, -(gpu_edge+32  ),mounting_bar_thick/2, SCREW_IN_WIDTH/2 );
+		{
+			centerx = 310;
+			centery = 340;
+			
+			float support_material_outside_t = 7;
+			float mounting_bar_thick = 12.5;
+			float mounting_bar_extra = 6.7;
+			
+			// 11.5 and 32 from edge of GPU.
+			float gpu_center_line = gpu_brace_bar_width/2;
+			float gpu_edge = gpu_center_line - gpu_thick/2;
+			//Circle( CUT, mounting_bar_thick/2, gpu_edge, SCREW_WIDTH/2 );
+			Circle( CUT, -(gpu_edge+11.5),mounting_bar_thick/2, SCREW_IN_WIDTH/2 );
+			Circle( CUT, -(gpu_edge+32  ),mounting_bar_thick/2, SCREW_IN_WIDTH/2 );
 
-		PathStart( CUT );
-		cx = 0;
-		cy = 0;
-		PathM( -cy, cx );
-		cy = gpu_brace_bar_width+support_material_outside_t;
-		PathL( -cy, cx );
-		cx += mounting_bar_thick;  // crossbar depth
-		cx += mounting_bar_extra;
-		PathL( -cy, cx );
-		cy -= support_material_outside_t;
-		InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
-		cy -= 4.8;
-		PathL( -cy, cx );
-		cx -= mounting_bar_extra;
-		PathL( -cy, cx );
-		cy -= gpu_brace_bar_width-4.8*2;
-		PathL( -cy, cx );
-		cx += mounting_bar_extra;
-		PathL( -cy, cx );
-		cy -= 4.8;
-		InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
-		cy -= support_material_outside_t;
-		PathL( -cy, cx );
-		cx -= mounting_bar_thick; // crossbar depth
-		cx -= mounting_bar_extra;
-		PathL( -cy, cx );
-		cx = 0;
-		cy = 0;
-		PathL( -cy, cx );
-		PathClose();
-		
+			PathStart( CUT );
+			cx = 0;
+			cy = 0;
+			PathM( -cy, cx );
+			cy = gpu_brace_bar_width+support_material_outside_t;
+			PathL( -cy, cx );
+			cx += mounting_bar_thick;  // crossbar depth
+			cx += mounting_bar_extra;
+			PathL( -cy, cx );
+			cy -= support_material_outside_t;
+			//InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
+			PathL( -cy, cx );			
+			cx -= 1;
+			PathL( -cy, cx );
+			cx += 1;
+			PathL( -cy, cx );
+			
+			
+			cy -= 4.8;
+			PathL( -cy, cx );
+			cx -= mounting_bar_extra;
+			PathL( -cy, cx );
+			cy -= gpu_brace_bar_width-4.8*2;
+			PathL( -cy, cx );
+			cx += mounting_bar_extra;
+			PathL( -cy, cx );
+			cy -= 4.8;
+			//InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
+			PathL( -cy, cx );
+			cx -= 1;
+			PathL( -cy, cx );
+			cx += 1;
+			PathL( -cy, cx );
+
+			cy -= support_material_outside_t;
+			PathL( -cy, cx );
+			cx -= mounting_bar_thick; // crossbar depth
+			cx -= mounting_bar_extra;
+			PathL( -cy, cx );
+			cx = 0;
+			cy = 0;
+			PathL( -cy, cx );
+			PathClose();
+		}
 
 	}
 	
