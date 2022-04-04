@@ -1,6 +1,9 @@
-//XXX TODO: 
-// * Either make rear locking handle M3 screw size'd
-// * Or reverse thread 
+// This is version 1.
+// For version 2:
+// (1) Move back plane 6.5mm so back plexi matches back case.
+// (2) Switch to a flat design, the CPU is getting too hot.
+// (3) The GPU logo is upside down.
+
 #include <stdio.h>
 #include <math.h>
 
