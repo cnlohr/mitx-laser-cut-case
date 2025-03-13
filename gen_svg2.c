@@ -1,11 +1,9 @@
 //XXX TODO: 
 //  Measure riser height, for wher RTX3090 will live.
 //    Change gpu_base_over_mobo_plate = 47; // Measured
-
-// * Either make rear locking handle M3 screw size'd
-// * Or reverse thread
-
-// TODO: Add hole for access to M2
+// Make sure the Mobo will fit
+// Make sure the x/y location of the GPU makes sense with the riser.
+// Figure out how high the gap in the back must go.
 
 #include <stdio.h>
 #include <math.h>
@@ -44,8 +42,8 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define SCREW_WIDTH 3.5
 #define SCREW_IN_WIDTH 3.1
 #define SCREW_EXTRA 3.0
-#define NUT_WIDTH   8.5
-#define NUT_HEIGHT   2.9
+#define NUT_WIDTH   8.0
+#define NUT_HEIGHT   2.6
 #define T_DEPTH     5.2
 
 // apply to both sides of inside cuts.
@@ -164,22 +162,23 @@ void DrawCase()
 	centerx = MATERIAL_THICKNESS+CUT_CLEARANCE+1;
 	centery = 1;
 	
+	const float right_justify = 3.5;
 	const float mb_tongue_mm = 40;
 	const float mb_tray_length = 314;
-	const float itx_x_offset = 143-4;
+	const float itx_x_offset = 143-4 - right_justify;
 	const float itx_y_offset = 4.0;
-	const float mb_tray_width = 314-4;  // was 172
+	const float mb_tray_width = 314-4 - right_justify;  // was 172
 	const int num_mb_tongues = 3;
 	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-5;
 	const float top_tongue_offset = MATERIAL_THICKNESS/2+5;
 	const float middle_tongue_offset = 24;
 	const int num_leds_edge = 36;
-	const float led_mb_center_x = itx_x_offset+15.5;
+	const float led_mb_center_x = itx_x_offset+18;
 	const float led_mb_center_y = 155;
 	const float led_spacing = 6.95;
 	const float led_width = 4.1;
 	const float led_nooj = 135;
-	const float led_noojy = 15;
+	const float led_noojy = 10;
 	
 	const float foot_height = 10;
 	const float sfx_width = 125;
@@ -190,11 +189,12 @@ void DrawCase()
 	const float back_plate_height_from_tray = 0;
 	const float sfx_psu_offset_y = -14;
 	
-	const float crossbrace_tongue_offset_y = 0;
+	const float crossbrace_tongue_offset_y = -5;
 	
 	// Hole ready for use but not used in current design.
 	const float hole_center_plate_for_mobox = mb_tray_width - 10;
 	const float hole_center_plate_for_moboy = 175; //Also used for placment.
+	const float middle_bracket_offset = (top_tongue_offset + bottom_tongue_offset + middle_tongue_offset)/2;
 	
 	const float back_valence_width = 12.3;
 	const float back_valence_depth = 35;
@@ -205,7 +205,7 @@ void DrawCase()
 	const float gpu_thick = 54;     //XXX TODO: Add padding around GPU?
 	const float gpu_height = 123.5;
 	const float material_above_gpu = 30;
-	const float gpu_offset_x = 4; // Was 18
+	const float gpu_offset_x = 3.6-right_justify; // Was 18
 	const float gpu_rail_mount_from_top = 30.4;
 	const float gpu_brace_bar_width = 64;
 	
@@ -213,6 +213,12 @@ void DrawCase()
 	float whole_crossbrace_height = 9+gpu_thick + 85-64;
 	float sidescrew_offset_y = 10;
 	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
+
+	float insert_brace_t_x = sfx_length+sfx_slop*2+mb_tongue_mm-6.5-right_justify;
+
+	// For GPU holder
+	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 80;
+				
 
 	StartSVG( 809.6, 457 );
 	
@@ -227,32 +233,20 @@ void DrawCase()
 			sfx_slop + sfx_length + sfx_side_offset,
 			mb_tray_length - sfx_slop - MATERIAL_THICKNESS - sfx_slide_offset, 0 );
 
-		//Signature
-		PathStart( ETCH );
-		cx = 130;
-		cy = 290;
-		float tx, ty;
-		float ixsx = .5;
-		float ixsy = .45;
-		tx = cx - 20*ixsx; ty = cy;  PathM( tx, ty );
-		tx = cx - 10*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
-		tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
-		tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
-		tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
-		tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
-		tx = cx - 10*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
-		tx = cx - 20*ixsx; ty = cy;  PathL( tx, ty );
-		PathClose();
 		// https://www.silverstonetek.com/techtalk/11008/pic-9.png
 		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16, M3_SCREW_WIDTH/2 );
 		Circle( CUT, itx_x_offset+6.35+157.48, itx_y_offset+10.16+22.86, M3_SCREW_WIDTH/2 );
 		Circle( CUT, itx_x_offset+6.35+157.48, itx_y_offset+10.16+154.94, M3_SCREW_WIDTH/2 );
 		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16+154.94, M3_SCREW_WIDTH/2 );
 
-		Circle( CUT, hole_center_plate_for_mobox, hole_center_plate_for_moboy, SCREW_WIDTH/2 );
+		Circle( CUT, insert_brace_t_x, bottom_tongue_offset, SCREW_WIDTH/2 );
+		Circle( CUT, insert_brace_t_x, middle_bracket_offset, SCREW_WIDTH/2 );
+		Circle( CUT, insert_brace_t_x, top_tongue_offset, SCREW_WIDTH/2 );
 
-		FillHexagons( CUT, 84+itx_x_offset-68, 97, 220, 170, 9, 1 );
-		FillHexagons( CUT, 84+itx_x_offset-142, 226, 100, 130, 9, 1 );
+
+
+		FillHexagons( CUT, 84+itx_x_offset-66, 100, 220, 160, 9, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-94, 232, 160, 130, 9, 0 );
 		//Row between mobo and psu
 		//FillHexagons( CUT, 95, 174, 125, 20 );
 		
@@ -264,7 +258,8 @@ void DrawCase()
 			float leda = i * led_spacing;
 			float ledb = leda + led_width;
 			float led_line_width = (num_leds_edge-1) * led_spacing + led_width;
-			if( ( j == 2 && i < 18 ) || ( j == 1 && i >= 18 ) ) continue;
+			float led_extra_bottom = 4;
+			if( ( j == 2 && i < 12 ) || ( j == 1 && i >= 18 ) ) continue;
 			switch( j )
 			{
 			case 0:
@@ -276,8 +271,8 @@ void DrawCase()
 							  led_mb_center_x+led_line_width/2+led_width/2+led_noojy, led_mb_center_y-led_line_width/2+ledb+(led_spacing-led_width)/2, 0 );
 				break;
 			case 2:
-				DrawBox( CUT, led_mb_center_x+led_line_width/2-leda, led_mb_center_y-led_width/2+led_nooj, 
-							  led_mb_center_x+led_line_width/2-ledb, led_mb_center_y+led_width/2+led_nooj, 0 );
+				DrawBox( CUT, led_mb_center_x+led_line_width/2-leda, led_extra_bottom+led_mb_center_y-led_width/2+led_nooj, 
+							  led_mb_center_x+led_line_width/2-ledb, led_extra_bottom+led_mb_center_y+led_width/2+led_nooj, 0 );
 				break;
 			case 3:
 				DrawBox( CUT, led_mb_center_x-led_line_width/2-led_width/2-led_noojy, led_mb_center_y+led_line_width/2-leda+(led_spacing-led_width)/2, 
@@ -353,6 +348,8 @@ void DrawCase()
 				cy -= mb_tongue_spacing/2;
 			PathL( cx, cy );
 		}
+
+				InsertT( backplate_mount_lateral, cy, 0, 1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 		PathL( 0, 0 );
 		PathClose( );
 	}
@@ -365,18 +362,18 @@ void DrawCase()
 			// Bottom plate.
 			if( plate == 0 )
 			{
-				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
-				centery = 52;
+				centerx = mb_tray_width+MATERIAL_THICKNESS*3+.5+1;
+				centery = 30;
 			}
 			else if( plate == 1 )
 			{
-				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
-				centery = whole_crossbrace_height*2-10;
+				centerx = mb_tray_width+MATERIAL_THICKNESS*3+.5+1;
+				centery = 115;
 			}
 			else
 			{
-				centerx = mb_tray_width+MATERIAL_THICKNESS*2+.5+1;
-				centery = whole_crossbrace_height*4-60;
+				centerx = mb_tray_width+MATERIAL_THICKNESS*3+.5+1;
+				centery = 230;
 			}
 			
 			const float handle_bump = 29;
@@ -429,13 +426,11 @@ void DrawCase()
 		
 				PathClose();
 				
-				float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 80;
-				
 				// material_above_gpu and gpu_thick
 				float gpu_center_line = material_above_gpu+gpu_thick/2;
 
 				Circle( CUT, backplate_mount_lateral, gpu_center_line-gpu_brace_bar_width/2, SCREW_WIDTH/2 );
-				Circle( CUT, backplate_mount_lateral, gpu_center_line+gpu_brace_bar_width/2, SCREW_WIDTH/2 );
+				//Circle( CUT, backplate_mount_lateral, gpu_center_line+gpu_brace_bar_width/2, SCREW_WIDTH/2 );
 			}
 			else
 			{
@@ -445,6 +440,92 @@ void DrawCase()
 
 			if( plate == 2 )
 			{
+
+				Circle( CUT, 185, 50, 25/2 );
+
+				// Add USB Mount
+				float ucx = 145;
+				float ucy = 65;
+				cx = ucx-7.5;
+				cy = ucy;
+				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+				cx = ucx+7.5;
+				cy = ucy;
+				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+
+
+				const float uround_width = 6;
+				const float uround_radius = 2;
+
+				float phi = 0;
+				PathStart( CUT );
+				for( ; phi < 3.14159*2; phi += 0.001 )
+				{
+					float cx = cos( phi )*uround_radius;
+					float cy = sin( phi )*uround_radius;
+					if( cx < 0 )
+						cx -= uround_width/2;
+					else
+						cx += uround_width/2;
+					PathL( cx + ucx, cy + ucy );
+				}
+				PathClose();
+
+
+
+				for( ucy = 30; ucy < 45; ucy += 14 )
+				{
+					ucx = 145;
+					cx = ucx-15;
+					cy = ucy;
+					Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+					cx = ucx+15;
+					cy = ucy;
+					Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+
+
+					const float uround3_width = 10;
+					const float uround3_radius = 5;
+
+					phi = 0;
+					PathStart( CUT );
+					for( ; phi < 3.14159*2; phi += 0.001 )
+					{
+						float cx = cos( phi )*uround3_radius;
+						float cy = sin( phi )*uround3_radius;
+						if( cx < 0 )
+							cx -= uround3_width/2;
+						else
+							cx += uround3_width/2;
+						PathL( cx + ucx, cy + ucy );
+					}
+					PathClose();
+				}
+
+
+
+				printf( "<g transform=\"translate(110,380)\">" );
+				printf( "<g transform=\"rotate(-45)\">" );
+
+				//Signature
+				PathStart( ETCH );
+				cx = 0;
+				cy = 0;
+				float tx, ty;
+				float ixsx = .3;
+				float ixsy = .25;
+				tx = cx - 20*ixsx; ty = cy;  PathM( tx, ty );
+				tx = cx - 10*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 10*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 20*ixsx; ty = cy;  PathL( tx, ty );
+				PathClose();
+				printf( "</g>" );
+				printf( "</g>" );
+
 				//FillHexagons( CUT, 74, 71, 115, 20, 8, 0 );
 			}
 			else if( plate == 1 )
@@ -486,10 +567,10 @@ void DrawCase()
 			PathL( cx, cy = whole_crossbrace_height - height_from_board_bottom );
 
 
-			if( plate == 1 )
+			if( plate == 1 ) // Mid plate
 			{
-				InsertT( sfx_length+sfx_slop*2+mb_tongue_mm-5, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
-				cx += 145;
+				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				cx += 141.5-right_justify;
 				PathL( cx, cy );
 				PathL( cx, cy-=68 );
 				cx+=135;
@@ -505,17 +586,22 @@ void DrawCase()
 			}
 			else if( plate == 0 ) // Back plate
 			{
-				InsertT( sfx_length+sfx_slop*2+mb_tongue_mm-5, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
-				cx += 160;
+				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				PathL( cx, cy );
-				PathL( cx, cy-=40 );
-				cx+=130;
+				cx += 141.5-right_justify;
 				PathL( cx, cy );
-				PathL( cx, cy+=40 );
+				cy -= 15.0;
+				PathL( cx, cy );
+				cx += 6.0;
+				PathL( cx, cy );
+				PathL( cx, cy-=37 );
+				cx+=162.5;
+				PathL( cx, cy );
+				PathL( cx, cy+=10 );
 			}
 			else
 			{
-				InsertT( sfx_length+sfx_slop*2+mb_tongue_mm-5, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			}
 			
 			PathL( cx = mb_tray_width, cy );
@@ -557,8 +643,8 @@ void DrawCase()
 		
 		// GPU Mounting Bar
 		{
-			centerx = 420;
-			centery = 326;
+			centerx = 590;
+			centery = 160;
 			
 			float support_material_outside_t = 7;
 			float mounting_bar_thick = 12.5;
@@ -623,14 +709,14 @@ void DrawCase()
 		int side;
 		for( side = 0; side < 2; side++ )
 		{
-			if( side == 1 )
+			//if( side == 1 || side == 0 )
 			{
 				printf( "<g transform=\"rotate(90)\">" );
 			}
 			float cx = 0;
 			float cy = 0;
-			centerx = (side==0)?(349+300):320;//+side*(whole_crossbrace_height+25)+300;
-			centery = (side==0)?1:-318;
+			centerx = (side==0)?316:316;//+side*(whole_crossbrace_height+25)+300;
+			centery = (side==0)?-640:-318;
 
 			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*4/4, SCREW_WIDTH/2 );
 			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*8/4, SCREW_WIDTH/2 );
@@ -654,7 +740,7 @@ void DrawCase()
 					case 0: yplace = top_tongue_offset; break;
 					case 1: yplace = bottom_tongue_offset; break;
 					case 3: yplace = hole_center_plate_for_moboy; break; // Not used now.
-					case 2: yplace = (top_tongue_offset + bottom_tongue_offset + middle_tongue_offset)/2; break;
+					case 2: yplace = middle_bracket_offset; break;
 				}
 				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
 				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
@@ -723,7 +809,7 @@ void DrawCase()
 			PathL( cx, cy );
 			PathClose();
 			
-			if( side == 1 )
+			//if( side == 1 )
 			{
 				printf( "</g>" );
 			}
