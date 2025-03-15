@@ -43,12 +43,25 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define TOOTH_WIDTH 30
 #define EAR 0.5
 #define M3_SCREW_WIDTH 2.7
-#define SCREW_WIDTH 3.5
-#define SCREW_IN_WIDTH 3.1
-#define SCREW_EXTRA 3.0
+
+#if 0
+// Regular Nuts
 #define NUT_WIDTH   8.0
 #define NUT_HEIGHT   2.6
 #define T_DEPTH     5.2
+#define SCREW_EXTRA 3.0
+#define SCREW_WIDTH 3.5
+#define SCREW_IN_WIDTH 3.1
+#else
+
+// DIN562 THIN Nut M3
+#define NUT_WIDTH   5.5
+#define NUT_HEIGHT   1.8
+#define T_DEPTH     5.0
+#define SCREW_EXTRA 3.0  // How much further the screw penetrates
+#define SCREW_WIDTH 3.15
+#define SCREW_IN_WIDTH 3.1
+#endif
 
 // apply to both sides of inside cuts.
 #define CUT_CLEARANCE -.1
@@ -445,7 +458,8 @@ void DrawCase()
 			if( plate == 2 )
 			{
 
-				Circle( CUT, 185, 50, 25/2 );
+				// Power button
+				Circle( CUT, 185, 65, 25/2 );
 
 				// Add USB Mount
 				float ucx = 145;
@@ -476,45 +490,57 @@ void DrawCase()
 				PathClose();
 
 
-
-				for( ucy = 30; ucy < 45; ucy += 14 )
+				int uq = 0;
+				for( uq = 0; uq < 2; uq++ )
 				{
-					ucx = 145;
-					cx = ucx-15;
-					cy = ucy;
-					Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-					cx = ucx+15;
-					cy = ucy;
-					Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-
-
-					const float uround3_width = 10;
-					const float uround3_radius = 5;
-
-					phi = 0;
-					PathStart( CUT );
-					for( ; phi < 3.14159*2; phi += 0.001 )
+					for( ucy = 30; ucy < 45; ucy += 14 )
 					{
-						float cx = cos( phi )*uround3_radius;
-						float cy = sin( phi )*uround3_radius;
-						if( cx < 0 )
-							cx -= uround3_width/2;
-						else
-							cx += uround3_width/2;
-						PathL( cx + ucx, cy + ucy );
+						ucx = 150;
+						cx = ucx-15 - (uq*100);
+						cy = ucy+(uq*15);
+						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+						cx = ucx+15- (uq*100);
+						cy = ucy+(uq*15);
+						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+
+
+						const float uround3_width = 10;
+						const float uround3_radius = 5;
+
+						phi = 0;
+						PathStart( CUT );
+						for( ; phi < 3.14159*2; phi += 0.001 )
+						{
+							float cx = cos( phi )*uround3_radius;
+							float cy = sin( phi )*uround3_radius+(uq*15);
+							if( cx < 0 )
+								cx -= uround3_width/2;
+							else
+								cx += uround3_width/2;
+							cx += - (uq*100);
+							PathL( cx + ucx, cy + ucy );
+						}
+						PathClose();
 					}
-					PathClose();
 				}
 
-
+				// Draw outline around extra USB spacer
+				PathStart( CUT );
+				cx = 50;
+				cy = 52;
+				PathL( cx + -20, cy -18 );
+				PathL( cx + 20, cy -18 );
+				PathL( cx + 20, cy + 18 );
+				PathL( cx + -20, cy + 18 );
+				PathClose();
 
 				printf( "<g transform=\"translate(110,380)\">" );
 				printf( "<g transform=\"rotate(-45)\">" );
 
 				//Signature
 				PathStart( ETCH );
-				cx = 0;
-				cy = 0;
+				cx =-10;
+				cy =-10;
 				float tx, ty;
 				float ixsx = .3;
 				float ixsy = .25;
