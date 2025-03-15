@@ -1,9 +1,13 @@
 //XXX TODO: 
 //  Measure riser height, for wher RTX3090 will live.
-//    Change gpu_base_over_mobo_plate = 47; // Measured
-// Make sure the Mobo will fit
+//    Change gpu_base_over_mobo_plate = 47; // *****
 // Make sure the x/y location of the GPU makes sense with the riser.
 // Figure out how high the gap in the back must go.
+
+// TODO: add access window for SSD on back of case.
+//    Rectangle, centered 31mm from side, 90mm from back. 30mm wide 95mm long.
+
+// Make sure the Mobo will fit --> 6.75mm center of holes to right side of case, don't change anything there.
 
 #include <stdio.h>
 #include <math.h>
@@ -162,12 +166,12 @@ void DrawCase()
 	centerx = MATERIAL_THICKNESS+CUT_CLEARANCE+1;
 	centery = 1;
 	
-	const float right_justify = 3.5;
+	const float right_justify = 2.5;
 	const float mb_tongue_mm = 40;
 	const float mb_tray_length = 314;
 	const float itx_x_offset = 143-4 - right_justify;
 	const float itx_y_offset = 4.0;
-	const float mb_tray_width = 314-4 - right_justify;  // was 172
+	const float mb_tray_width = 314-2 - right_justify;  // was 172
 	const int num_mb_tongues = 3;
 	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-5;
 	const float top_tongue_offset = MATERIAL_THICKNESS/2+5;
@@ -205,7 +209,7 @@ void DrawCase()
 	const float gpu_thick = 54;     //XXX TODO: Add padding around GPU?
 	const float gpu_height = 123.5;
 	const float material_above_gpu = 30;
-	const float gpu_offset_x = 3.6-right_justify; // Was 18
+	const float gpu_offset_x = 2.6-right_justify; // Was 18
 	const float gpu_rail_mount_from_top = 30.4;
 	const float gpu_brace_bar_width = 64;
 	
@@ -215,7 +219,7 @@ void DrawCase()
 	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
 
 	float insert_brace_t_x = sfx_length+sfx_slop*2+mb_tongue_mm-6.5-right_justify;
-
+	float insert_brace_t_x_bp_offset = -2;
 	// For GPU holder
 	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 80;
 				
@@ -240,8 +244,8 @@ void DrawCase()
 		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16+154.94, M3_SCREW_WIDTH/2 );
 
 		Circle( CUT, insert_brace_t_x, bottom_tongue_offset, SCREW_WIDTH/2 );
-		Circle( CUT, insert_brace_t_x, middle_bracket_offset, SCREW_WIDTH/2 );
-		Circle( CUT, insert_brace_t_x, top_tongue_offset, SCREW_WIDTH/2 );
+		Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, middle_bracket_offset, SCREW_WIDTH/2 );
+		Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, top_tongue_offset, SCREW_WIDTH/2 );
 
 
 
@@ -402,7 +406,7 @@ void DrawCase()
 			if( plate == 0 )
 			{
 				const float edge_card_offset_y = 7;
-				const float edge_card_depth = 15;
+				const float edge_card_depth = 13;
 				const float edge_card_bottom_bump = 1;
 				PathStart( CUT );
 				cx = gpu_offset_x;
@@ -569,14 +573,14 @@ void DrawCase()
 
 			if( plate == 1 ) // Mid plate
 			{
-				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
-				cx += 141.5-right_justify;
+				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				cx += 139-right_justify;
 				PathL( cx, cy );
 				PathL( cx, cy-=68 );
-				cx+=135;
+				cx+=145;
 				PathL( cx, cy );
-				cx+=30;
-				cy+=30.0*1.5;
+				cx+=28;
+				cy+=41;
 				PathL( cx, cy );
 				// Dont' draw material below tongue.
 //				cy-=23;
@@ -586,13 +590,13 @@ void DrawCase()
 			}
 			else if( plate == 0 ) // Back plate
 			{
-				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				PathL( cx, cy );
-				cx += 141.5-right_justify;
+				cx += 139.0-right_justify;
 				PathL( cx, cy );
-				cy -= 15.0;
+				cy -= 20.0;
 				PathL( cx, cy );
-				cx += 6.0;
+				cx += 10.5;
 				PathL( cx, cy );
 				PathL( cx, cy-=37 );
 				cx+=162.5;
