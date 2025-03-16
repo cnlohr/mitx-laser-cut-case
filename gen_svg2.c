@@ -11,7 +11,7 @@
 // OKAY: Middle brace holder needs to be thinner on both sides.
 // OKAY: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm on tongue
 // OKAY: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
-// TODO: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
+// OKAY: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
 // TODO: Front T doesn't line up with hole on mobo plate.
 // TODO: GPU card edge connector needs a little more comfort.  Increase GPU Card edge by 1mm
 // TODO: Make holes that the motherboard CPU connect into a little bit closer
@@ -49,7 +49,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define TOOTH_WIDTH 30
 #define EAR 0.5
 #define M3_SCREW_WIDTH 3.0 // For PSU+USB connectors
-#define M3_MOUNTING_SCREW_WIDTH 4.2 // Inserts for Mobo Mount
+#define M3_MOUNTING_SCREW_WIDTH 4.4 // Inserts for Mobo Mount
 
 #define SCREW_IN_WIDTH 3.1
 
@@ -284,17 +284,17 @@ void DrawCase()
 		FillHexagons( CUT, 84+itx_x_offset-66, 232, 220, 130, 9, 1 );
 		//Row between mobo and psu
 		//FillHexagons( CUT, 95, 174, 125, 20 );
-		FillHexagons( CUT, 84+itx_x_offset-66, 38.6, 60, 30, 9, 1 ); // Back above access panel
+//		FillHexagons( CUT, 84+itx_x_offset-66, 38.6, 60, 30, 9, 1 ); // Back above access panel
 		FillHexagons( CUT, 84+itx_x_offset-66+18.6, 167.6, 44, 40, 9, 1 );
 
 		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 167.6, 94, 30, 9, 1 );
 
 		
-		// Door for flash
+		// Door for flash SSD Access window
 		float doorw = 30;
-		float doorh = 90;
-		float doorx = 35+itx_x_offset;
-		float doory = 94;
+		float doorh = 95;
+		float doorx = 33+itx_x_offset;
+		float doory = 86;
 		DrawBox( CUT, doorx-doorw/2, doory-doorh/2, doorx+doorw/2, doory+doorh/2, 0 );
 		FillHexagons( CUT, doorx-13.5, doory, 30, 100, 9, 1 );
 
