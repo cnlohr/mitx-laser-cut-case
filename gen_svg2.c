@@ -10,7 +10,7 @@
 // OKAY: Tongues on sides don't line up.
 // OKAY: Middle brace holder needs to be thinner on both sides.
 // OKAY: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm on tongue
-// TODO: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
+// OKAY: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
 // TODO: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
 // TODO: Front T doesn't line up with hole on mobo plate.
 // TODO: GPU card edge connector needs a little more comfort.  Increase GPU Card edge by 1mm
@@ -849,12 +849,12 @@ void DrawCase()
 				//Holes for PSU
 				float cx = whole_crossbrace_height;
 				float cy = mb_tray_length + sfx_psu_offset_y;
-				Circle( CUT, cx-5.9, cy-6.2, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-32, cy-6.2, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-58.1, cy-6.2, M3_SCREW_WIDTH/2 ); // This one was covered in previous design
-				Circle( CUT, cx-5.9, cy-119.2, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-32, cy-119.2, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-58.1, cy-119.2, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-6.3, cy-6.4, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-32.1, cy-6.4, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-57.9, cy-6.4, M3_SCREW_WIDTH/2 ); // This one was covered in previous design
+				Circle( CUT, cx-6.3, cy-119.1, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-32.1, cy-119.1, M3_SCREW_WIDTH/2 );
+				Circle( CUT, cx-57.9, cy-119.1, M3_SCREW_WIDTH/2 );
 				cx = whole_crossbrace_height-64/2;
 				cy = mb_tray_length - 125.5/2 + sfx_psu_offset_y;
 				DrawBox( CUT, cx-56/2, cy-104/2, cx+56/2, cy+104/2, 0 );
