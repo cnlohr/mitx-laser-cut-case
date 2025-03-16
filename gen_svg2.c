@@ -52,14 +52,20 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define SCREW_EXTRA 3.0
 #define SCREW_WIDTH 3.5
 #define SCREW_IN_WIDTH 3.1
-#else
-
 // DIN562 THIN Nut M3
+#elif 0
 #define NUT_WIDTH   5.5
-#define NUT_HEIGHT   1.8
+#define NUT_HEIGHT   1.7
 #define T_DEPTH     5.0
 #define SCREW_EXTRA 3.0  // How much further the screw penetrates
-#define SCREW_WIDTH 3.15
+#define SCREW_WIDTH 3
+#define SCREW_IN_WIDTH 3.1
+#else
+#define NUT_WIDTH   5.65
+#define NUT_HEIGHT   .75
+#define T_DEPTH     5.0
+#define SCREW_EXTRA 2.0  // How much further the screw penetrates
+#define SCREW_WIDTH 3
 #define SCREW_IN_WIDTH 3.1
 #endif
 
@@ -455,11 +461,27 @@ void DrawCase()
 						  gpu_offset_x+gpu_height, material_above_gpu+gpu_thick, 0 );
 			}
 
+
+			if( plate == 0 )
+			{
+				FillHexagons( CUT, centerx-183, centery-15, 240, 18, 9, 0 );
+			}
+			if( plate == 1 )
+			{
+				FillHexagons( CUT, centerx-258, centery-100, 100, 18, 9, 0 );
+			}
+			if( plate == 2 )
+			{
+				FillHexagons( CUT, centerx-183, centery-215, 240, 18, 9, 0 );
+			}
+
+
+
 			if( plate == 2 )
 			{
 
 				// Power button
-				Circle( CUT, 185, 65, 25/2 );
+				Circle( CUT, 185, 65, 16.2/2 );
 
 				// Add USB Mount
 				float ucx = 145;
@@ -493,7 +515,7 @@ void DrawCase()
 				int uq = 0;
 				for( uq = 0; uq < 2; uq++ )
 				{
-					for( ucy = 30; ucy < 45; ucy += 14 )
+					for( ucy = 35; ucy < 50; ucy += 14 )
 					{
 						ucx = 150;
 						cx = ucx-15 - (uq*100);
@@ -527,11 +549,11 @@ void DrawCase()
 				// Draw outline around extra USB spacer
 				PathStart( CUT );
 				cx = 50;
-				cy = 52;
-				PathL( cx + -20, cy -18 );
-				PathL( cx + 20, cy -18 );
-				PathL( cx + 20, cy + 18 );
-				PathL( cx + -20, cy + 18 );
+				cy = 57;
+				PathL( cx + -18, cy -14 );
+				PathL( cx + 18, cy -14 );
+				PathL( cx + 18, cy + 14 );
+				PathL( cx + -18, cy + 14 );
 				PathClose();
 
 				printf( "<g transform=\"translate(110,380)\">" );
@@ -542,16 +564,18 @@ void DrawCase()
 				cx =-10;
 				cy =-10;
 				float tx, ty;
-				float ixsx = .3;
-				float ixsy = .25;
-				tx = cx - 20*ixsx; ty = cy;  PathM( tx, ty );
-				tx = cx - 10*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				float ixsx = .2;
+				float ixsy = .2;
+				float ixsx2 = .355;
+				float ixsx21 = .28;
+				tx = cx - 20*ixsx21; ty = cy;  PathM( tx, ty );
+				tx = cx - 10*ixsx2; ty = cy - 10*ixsy;  PathL( tx, ty );
 				tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
 				tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
 				tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
 				tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx - 10*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx - 20*ixsx; ty = cy;  PathL( tx, ty );
+				tx = cx - 10*ixsx2; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 20*ixsx21; ty = cy;  PathL( tx, ty );
 				PathClose();
 				printf( "</g>" );
 				printf( "</g>" );
