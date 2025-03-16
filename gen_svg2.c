@@ -42,7 +42,10 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define MATERIAL_THICKNESS 8.9
 #define TOOTH_WIDTH 30
 #define EAR 0.5
-#define M3_SCREW_WIDTH 2.7
+#define M3_SCREW_WIDTH 3.0 // For PSU+USB connectors
+#define M3_MOUNTING_SCREW_WIDTH 4.2 // Inserts for Mobo Mount
+
+#define SCREW_IN_WIDTH 3.1
 
 #if 0
 // Regular Nuts
@@ -51,22 +54,19 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define T_DEPTH     5.2
 #define SCREW_EXTRA 3.0
 #define SCREW_WIDTH 3.5
-#define SCREW_IN_WIDTH 3.1
 // DIN562 THIN Nut M3
 #elif 0
 #define NUT_WIDTH   5.5
 #define NUT_HEIGHT   1.7
 #define T_DEPTH     5.0
 #define SCREW_EXTRA 3.0  // How much further the screw penetrates
-#define SCREW_WIDTH 3
-#define SCREW_IN_WIDTH 3.1
+#define SCREW_WIDTH 3.1
 #else
 #define NUT_WIDTH   5.65
 #define NUT_HEIGHT   .75
 #define T_DEPTH     5.0
 #define SCREW_EXTRA 2.0  // How much further the screw penetrates
-#define SCREW_WIDTH 3
-#define SCREW_IN_WIDTH 3.1
+#define SCREW_WIDTH 3.1
 #endif
 
 // apply to both sides of inside cuts.
@@ -195,13 +195,13 @@ void DrawCase()
 	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-5;
 	const float top_tongue_offset = MATERIAL_THICKNESS/2+5;
 	const float middle_tongue_offset = 24;
-	const int num_leds_edge = 36;
+	const int num_leds_edge = 30;
 	const float led_mb_center_x = itx_x_offset+18;
-	const float led_mb_center_y = 155;
-	const float led_spacing = 6.95;
-	const float led_width = 4.1;
-	const float led_nooj = 135;
-	const float led_noojy = 10;
+	const float led_mb_center_y = 156;
+	const float led_spacing = 8.3;
+	const float led_width = 4.25;
+	const float led_nooj = 134;
+	const float led_noojy = 14;
 	
 	const float foot_height = 10;
 	const float sfx_width = 125;
@@ -239,8 +239,8 @@ void DrawCase()
 
 	float insert_brace_t_x = sfx_length+sfx_slop*2+mb_tongue_mm-6.5-right_justify;
 	float insert_brace_t_x_bp_offset = -2;
-	// For GPU holder
-	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 80;
+	// For GPU holder / bracket.
+	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 64;
 				
 
 	StartSVG( 809.6, 457 );
@@ -251,16 +251,16 @@ void DrawCase()
 		//MOTHERBOARD 
 		
 		// PSU
-		DrawBox( ETCH, sfx_slop + sfx_side_offset, 
-			mb_tray_length - sfx_slop - sfx_width - MATERIAL_THICKNESS - sfx_slide_offset, 
-			sfx_slop + sfx_length + sfx_side_offset,
-			mb_tray_length - sfx_slop - MATERIAL_THICKNESS - sfx_slide_offset, 0 );
+		//DrawBox( ETCH, sfx_slop + sfx_side_offset, 
+		//	mb_tray_length - sfx_slop - sfx_width - MATERIAL_THICKNESS - sfx_slide_offset, 
+		//	sfx_slop + sfx_length + sfx_side_offset,
+		//	mb_tray_length - sfx_slop - MATERIAL_THICKNESS - sfx_slide_offset, 0 );
 
 		// https://www.silverstonetek.com/techtalk/11008/pic-9.png
-		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16, M3_SCREW_WIDTH/2 );
-		Circle( CUT, itx_x_offset+6.35+157.48, itx_y_offset+10.16+22.86, M3_SCREW_WIDTH/2 );
-		Circle( CUT, itx_x_offset+6.35+157.48, itx_y_offset+10.16+154.94, M3_SCREW_WIDTH/2 );
-		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16+154.94, M3_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16, M3_MOUNTING_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35+157.48, itx_y_offset+10.16+22.86, M3_MOUNTING_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35+157.48, itx_y_offset+10.16+154.94, M3_MOUNTING_SCREW_WIDTH/2 );
+		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16+154.94, M3_MOUNTING_SCREW_WIDTH/2 );
 
 		Circle( CUT, insert_brace_t_x, bottom_tongue_offset, SCREW_WIDTH/2 );
 		Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, middle_bracket_offset, SCREW_WIDTH/2 );
@@ -268,11 +268,21 @@ void DrawCase()
 
 
 
-		FillHexagons( CUT, 84+itx_x_offset-66, 100, 220, 160, 9, 1 );
-		FillHexagons( CUT, 84+itx_x_offset-94, 232, 160, 130, 9, 0 );
+		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 103, 112, 160, 9, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-66+74.0, 103, 80, 170, 9, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-66, 232, 220, 130, 9, 1 );
 		//Row between mobo and psu
 		//FillHexagons( CUT, 95, 174, 125, 20 );
 		
+		// Door for flash
+		float doorw = 30;
+		float doorh = 90;
+		float doorx = 35+itx_x_offset;
+		float doory = 94;
+		DrawBox( CUT, doorx-doorw/2, doory-doorh/2, doorx+doorw/2, doory+doorh/2, 0 );
+		FillHexagons( CUT, doorx-13.5, doory, 30, 100, 9, 1 );
+
+
 		// Add LEDs
 		int j;
 		for( j = 0; j < 4; j++ )
@@ -282,7 +292,7 @@ void DrawCase()
 			float ledb = leda + led_width;
 			float led_line_width = (num_leds_edge-1) * led_spacing + led_width;
 			float led_extra_bottom = 4;
-			if( ( j == 2 && i < 12 ) || ( j == 1 && i >= 18 ) ) continue;
+			//if( ( j == 2 && i < 10 ) || ( j == 1 && i >= 16 ) ) continue;
 			switch( j )
 			{
 			case 0:
@@ -347,6 +357,8 @@ void DrawCase()
 		PathL( cx, cy+=MATERIAL_THICKNESS+CUT_CLEARANCE );
 		*/
 
+		InsertT( backplate_mount_lateral, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+
 		PathL( cx = mb_tray_width, cy );
 		PathL( cx, cy-=mb_tongue_spacing/2 );
 		for( i = 0; i < num_mb_tongues; i++ )
@@ -372,7 +384,7 @@ void DrawCase()
 			PathL( cx, cy );
 		}
 
-				InsertT( backplate_mount_lateral, cy, 0, 1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+		InsertT( backplate_mount_lateral, cy, 0, 1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 		PathL( 0, 0 );
 		PathClose( );
 	}
@@ -448,12 +460,7 @@ void DrawCase()
 				PathL( cx, cy );
 		
 				PathClose();
-				
-				// material_above_gpu and gpu_thick
-				float gpu_center_line = material_above_gpu+gpu_thick/2;
 
-				Circle( CUT, backplate_mount_lateral, gpu_center_line-gpu_brace_bar_width/2, SCREW_WIDTH/2 );
-				//Circle( CUT, backplate_mount_lateral, gpu_center_line+gpu_brace_bar_width/2, SCREW_WIDTH/2 );
 			}
 			else
 			{
@@ -461,10 +468,21 @@ void DrawCase()
 						  gpu_offset_x+gpu_height, material_above_gpu+gpu_thick, 0 );
 			}
 
+			if( plate == 0 || plate == 2 )
+			{
+
+				
+				// material_above_gpu and gpu_thick
+				float gpu_center_line = material_above_gpu+gpu_thick/2;
+
+				Circle( CUT, backplate_mount_lateral, gpu_center_line-gpu_brace_bar_width/2, SCREW_WIDTH/2 );
+				//Circle( CUT, backplate_mount_lateral, gpu_center_line+gpu_brace_bar_width/2, SCREW_WIDTH/2 );
+
+			}
 
 			if( plate == 0 )
 			{
-				FillHexagons( CUT, centerx-183, centery-15, 240, 18, 9, 0 );
+				FillHexagons( CUT, centerx-174, centery-15, 230, 18, 9, 0 );
 			}
 			if( plate == 1 )
 			{
@@ -472,7 +490,8 @@ void DrawCase()
 			}
 			if( plate == 2 )
 			{
-				FillHexagons( CUT, centerx-183, centery-215, 240, 18, 9, 0 );
+				FillHexagons( CUT, centerx-174, centery-215, 230, 18, 9, 0 );
+				FillHexagons( CUT, centerx-81, centery-182.5, 100, 70, 9, 0 );
 			}
 
 
