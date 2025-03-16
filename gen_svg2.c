@@ -6,7 +6,7 @@
 
 // TODO: Can I acces the CPU 12V Power? No (Make sure as part of the later step, Mobo moves away from the wall by 0.5mm)
 //
-// TODO: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
+// OKAY: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
 // TODO: Tongues on sides don't line up.
 // TODO: Middle brace needs to be thinner on both sides.
 // TODO: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm
@@ -60,7 +60,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define T_DEPTH     5.2
 #define SCREW_EXTRA 3.0
 #define SCREW_WIDTH 3.5
-// DIN562 THIN Nut M3
+// DIN562 THIN Nut M3 (Square)
 #elif 0
 #define NUT_WIDTH   5.5
 #define NUT_HEIGHT   1.7
@@ -68,11 +68,13 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define SCREW_EXTRA 3.0  // How much further the screw penetrates
 #define SCREW_WIDTH 3.1
 #else
-#define NUT_WIDTH   5.65
-#define NUT_HEIGHT   .75
+// Heat insert M3
+#define NUT_WIDTH   6.1
+#define NUT_HEIGHT   .85
 #define T_DEPTH     5.0
 #define SCREW_EXTRA 2.0  // How much further the screw penetrates
 #define SCREW_WIDTH 3.1
+#define SCREW_WIDTH_T 4.3
 #endif
 
 // apply to both sides of inside cuts.
@@ -346,7 +348,7 @@ void DrawCase()
 			if( i != num_mb_tongues-1 )
 			{
 				cy += mb_tongue_spacing/2;
-				InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( cx, cy, 1, 0, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cy += mb_tongue_spacing/2;
 			}
 			else
@@ -368,7 +370,7 @@ void DrawCase()
 		PathL( cx, cy+=MATERIAL_THICKNESS+CUT_CLEARANCE );
 		*/
 
-		InsertT( backplate_mount_lateral, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+		InsertT( backplate_mount_lateral, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 		PathL( cx = mb_tray_width, cy );
 		PathL( cx, cy-=mb_tongue_spacing/2 );
@@ -387,7 +389,7 @@ void DrawCase()
 			if( i != num_mb_tongues-1 )
 			{
 				cy -= mb_tongue_spacing/2;
-				InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( cx, cy, -1, 0, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cy -= mb_tongue_spacing/2;
 			}
 			else
@@ -395,7 +397,7 @@ void DrawCase()
 			PathL( cx, cy );
 		}
 
-		InsertT( backplate_mount_lateral, cy, 0, 1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+		InsertT( backplate_mount_lateral, cy, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 		PathL( 0, 0 );
 		PathClose( );
 	}
@@ -627,7 +629,7 @@ void DrawCase()
 			float crossbrace_tongue_center = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 			PathM( cx = 0, cy = 0 );
 			cy+=crossbrace_tongue_center/2-sidescrew_offset_y;
-			InsertT( cx, cy, 1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+			InsertT( cx, cy, 1, 0, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			cy+=sidescrew_offset_y;
 			cy += crossbrace_tongue_center/2-mb_tongue_mm/2;
 			PathL( cx, cy );
@@ -653,7 +655,7 @@ void DrawCase()
 
 			if( plate == 1 ) // Mid plate
 			{
-				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cx += 139-right_justify;
 				PathL( cx, cy );
 				PathL( cx, cy-=68 );
@@ -670,7 +672,7 @@ void DrawCase()
 			}
 			else if( plate == 0 ) // Back plate
 			{
-				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				PathL( cx, cy );
 				cx += 139.0-right_justify;
 				PathL( cx, cy );
@@ -685,7 +687,7 @@ void DrawCase()
 			}
 			else
 			{
-				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			}
 			
 			PathL( cx = mb_tray_width, cy );
@@ -700,7 +702,7 @@ void DrawCase()
 			PathL( cx, cy );
 			
 			cy = crossbrace_tongue_center/2 - sidescrew_offset_y;
-			InsertT( cx, cy, -1, 0, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+			InsertT( cx, cy, -1, 0, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			cy += sidescrew_offset_y;
 			cy = 0;
 			PathL( cx, cy );
