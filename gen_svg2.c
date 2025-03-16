@@ -9,7 +9,7 @@
 // OKAY: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
 // OKAY: Tongues on sides don't line up.
 // OKAY: Middle brace holder needs to be thinner on both sides.
-// TODO: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm on tongue
+// OKAY: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm on tongue
 // TODO: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
 // TODO: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
 // TODO: Front T doesn't line up with hole on mobo plate.
@@ -79,6 +79,9 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 // apply to both sides of inside cuts.
 #define CUT_CLEARANCE -.1
+
+// After some experimenting, would just be nice if this was bigger.
+#define CUT_CLEARANCE_TONGUE 0.0
 
 #define DO_CASE_1 1
 #define DO_CASE_2 1
@@ -817,8 +820,8 @@ void DrawCase()
 				float ts = (mb_tray_length) / num_mb_tongues;
 				cy = (ts/2) + ts * i;
 				cx = whole_crossbrace_height;
-				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
-				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
+				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE;
+				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE_TONGUE;
 				DrawBox( CUT, cx, cy-twplusclear, cx+matplusclear*2, cy+twplusclear, EAR );
 			}
 
@@ -833,8 +836,8 @@ void DrawCase()
 					case 3: yplace = hole_center_plate_for_moboy; break; // Not used now.
 					case 2: yplace = middle_bracket_offset; break;
 				}
-				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
-				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
+				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE;
+				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE_TONGUE;
 				cx = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 				cy = yplace;
 				DrawBox( CUT, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
