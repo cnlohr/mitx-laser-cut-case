@@ -14,9 +14,9 @@
 // OKAY: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
 // OKAY: Front T doesn't line up with hole on mobo plate. (Fixed earlier)
 // OKAY: GPU card edge connector needs a little more comfort.  Increase GPU Card edge by 1mm
-// TODO: Make holes that the motherboard CPU connect into a little bit closer
-// TODO: Retract motherboard access plate.
-// TODO: Move mobo back some and towards the GPU
+// ????: Make holes that the motherboard CPU connect into a little bit closer?????? <<???
+// OKAY: Retract motherboard access plate.
+// OKAY: Move mobo back some and towards the GPU
 
 #include <stdio.h>
 #include <math.h>
@@ -202,8 +202,8 @@ void DrawCase()
 	const float right_justify = 2.5;
 	const float mb_tongue_mm = 40;
 	const float mb_tray_length = 314;
-	const float itx_x_offset = 143-4 - right_justify;
-	const float itx_y_offset = 4.0;
+	const float itx_x_offset = 143-6 - right_justify;
+	const float itx_y_offset = 1.0;
 	const float mb_tray_width = 314-2 - right_justify;  // was 172
 	const int num_mb_tongues = 3;
 	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-5;
@@ -688,12 +688,12 @@ void DrawCase()
 				PathL( cx, cy );
 				cx += 136.5-right_justify;
 				PathL( cx, cy );
-				cy -= 30.0;
+				cy -= 26.0;
 				PathL( cx, cy );
-				cx += 10.5;
+				cx += 9.5;
 				PathL( cx, cy );
-				PathL( cx, cy-=27 );
-				cx+=165;
+				PathL( cx, cy-=22 );
+				cx+=166;
 				PathL( cx, cy );
 				PathL( cx, cy+=10 );
 			}
