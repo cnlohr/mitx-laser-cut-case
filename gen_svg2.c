@@ -8,8 +8,8 @@
 //
 // OKAY: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
 // OKAY: Tongues on sides don't line up.
-// TODO: Middle brace needs to be thinner on both sides.
-// TODO: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm
+// OKAY: Middle brace holder needs to be thinner on both sides.
+// TODO: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm on tongue
 // TODO: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
 // TODO: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
 // TODO: Front T doesn't line up with hole on mobo plate.
@@ -69,12 +69,12 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define SCREW_WIDTH 3.1
 #else
 // Heat insert M3
-#define NUT_WIDTH   6.1
+#define NUT_WIDTH   5.8
 #define NUT_HEIGHT   .85
 #define T_DEPTH     5.0
 #define SCREW_EXTRA 2.0  // How much further the screw penetrates
 #define SCREW_WIDTH 3.1
-#define SCREW_WIDTH_T 4.3
+#define SCREW_WIDTH_T 4.25
 #endif
 
 // apply to both sides of inside cuts.
@@ -246,7 +246,7 @@ void DrawCase()
 	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
 
 	float insert_brace_t_x = sfx_length+sfx_slop*2+mb_tongue_mm-6.5-right_justify;
-	float insert_brace_t_x_bp_offset = -2;
+	float insert_brace_t_x_bp_offset = -3.2;
 	// For GPU holder / bracket.
 	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 64;
 				
@@ -370,7 +370,9 @@ void DrawCase()
 		PathL( cx, cy+=MATERIAL_THICKNESS+CUT_CLEARANCE );
 		*/
 
+		// For holding GPU in in the front.
 		InsertT( backplate_mount_lateral, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+		InsertT( backplate_mount_lateral+70, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 		PathL( cx = mb_tray_width, cy );
 		PathL( cx, cy-=mb_tongue_spacing/2 );
@@ -397,6 +399,7 @@ void DrawCase()
 			PathL( cx, cy );
 		}
 
+		// In-baseplate-T for holding motherboard back brace bracket.
 		InsertT( backplate_mount_lateral, cy, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 		PathL( 0, 0 );
 		PathClose( );
@@ -489,6 +492,8 @@ void DrawCase()
 				float gpu_center_line = material_above_gpu+gpu_thick/2;
 
 				Circle( CUT, backplate_mount_lateral, gpu_center_line-gpu_brace_bar_width/2, SCREW_WIDTH/2 );
+				if( plate == 2 )
+					Circle( CUT, backplate_mount_lateral+70, gpu_center_line-gpu_brace_bar_width/2, SCREW_WIDTH/2 );
 				//Circle( CUT, backplate_mount_lateral, gpu_center_line+gpu_brace_bar_width/2, SCREW_WIDTH/2 );
 
 			}
@@ -656,7 +661,7 @@ void DrawCase()
 			if( plate == 1 ) // Mid plate
 			{
 				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
-				cx += 139-right_justify;
+				cx += 136.5-right_justify;
 				PathL( cx, cy );
 				PathL( cx, cy-=68 );
 				cx+=145;
@@ -674,20 +679,20 @@ void DrawCase()
 			{
 				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				PathL( cx, cy );
-				cx += 139.0-right_justify;
+				cx += 136.5-right_justify;
 				PathL( cx, cy );
-				cy -= 20.0;
+				cy -= 30.0;
 				PathL( cx, cy );
 				cx += 10.5;
 				PathL( cx, cy );
-				PathL( cx, cy-=37 );
-				cx+=162.5;
+				PathL( cx, cy-=27 );
+				cx+=165;
 				PathL( cx, cy );
 				PathL( cx, cy+=10 );
 			}
 			else
 			{
-				InsertT( insert_brace_t_x, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				InsertT( insert_brace_t_x/*+insert_brace_t_x_bp_offset Not on last one */, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 			}
 			
 			PathL( cx = mb_tray_width, cy );
