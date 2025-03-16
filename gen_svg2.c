@@ -4,11 +4,17 @@
 // Make sure the x/y location of the GPU makes sense with the riser.
 // Figure out how high the gap in the back must go.
 
-// TODO: add access window for SSD on back of case.
-//    Rectangle, centered 31mm from side, 90mm from back. 30mm wide 95mm long.
-
-// Make sure the Mobo will fit --> 6.75mm center of holes to right side of case, don't change anything there.
-
+// TODO: Can I acces the CPU 12V Power? No (Make sure as part of the later step, Mobo moves away from the wall by 0.5mm)
+//
+// TODO: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
+// TODO: Tongues on sides don't line up.
+// TODO: Middle brace needs to be thinner on both sides.
+// TODO: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm
+// TODO: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
+// TODO: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
+// TODO: Front T doesn't line up with hole on mobo plate.
+// TODO: GPU card edge connector needs a little more comfort.  Increase GPU Card edge by 1mm
+// TODO: Make holes that the motherboard CPU connect into a little bit closer
 #include <stdio.h>
 #include <math.h>
 
@@ -273,6 +279,11 @@ void DrawCase()
 		FillHexagons( CUT, 84+itx_x_offset-66, 232, 220, 130, 9, 1 );
 		//Row between mobo and psu
 		//FillHexagons( CUT, 95, 174, 125, 20 );
+		FillHexagons( CUT, 84+itx_x_offset-66, 38.6, 60, 30, 9, 1 ); // Back above access panel
+		FillHexagons( CUT, 84+itx_x_offset-66+18.6, 167.6, 44, 40, 9, 1 );
+
+		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 167.6, 94, 30, 9, 1 );
+
 		
 		// Door for flash
 		float doorw = 30;
