@@ -7,7 +7,7 @@
 // TODO: Can I acces the CPU 12V Power? No (Make sure as part of the later step, Mobo moves away from the wall by 0.5mm)
 //
 // OKAY: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
-// TODO: Tongues on sides don't line up.
+// OKAY: Tongues on sides don't line up.
 // TODO: Middle brace needs to be thinner on both sides.
 // TODO: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm
 // TODO: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
@@ -830,7 +830,7 @@ void DrawCase()
 				}
 				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE;
 				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE;
-				cx = whole_crossbrace_height/2;
+				cx = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 				cy = yplace;
 				DrawBox( CUT, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
 				Circle( CUT, whole_crossbrace_height/4-sidescrew_offset_y, cy, SCREW_WIDTH/2 );
