@@ -12,9 +12,12 @@
 // OKAY: Add 0.2mm tongue slop side-to-side.  Material thickness Also +0.2mm on tongue
 // OKAY: SFP PSU pull mounts 0.3mm more inward,like on each side, pull the pairs of screws more towards the PSU.  Move them up by 0.1mm.
 // OKAY: Move the SSD access window in the back towards where the cables plug in by 10mm and more towards the PCI-E bus by 2.5mm
-// TODO: Front T doesn't line up with hole on mobo plate.
-// TODO: GPU card edge connector needs a little more comfort.  Increase GPU Card edge by 1mm
+// OKAY: Front T doesn't line up with hole on mobo plate. (Fixed earlier)
+// OKAY: GPU card edge connector needs a little more comfort.  Increase GPU Card edge by 1mm
 // TODO: Make holes that the motherboard CPU connect into a little bit closer
+// TODO: Retract motherboard access plate.
+// TODO: Move mobo back some and towards the GPU
+
 #include <stdio.h>
 #include <math.h>
 
@@ -48,7 +51,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define MATERIAL_THICKNESS 8.9
 #define TOOTH_WIDTH 30
 #define EAR 0.5
-#define M3_SCREW_WIDTH 3.0 // For PSU+USB connectors
+#define M3_SCREW_WIDTH 3.2 // For PSU+USB connectors
 #define M3_MOUNTING_SCREW_WIDTH 4.4 // Inserts for Mobo Mount
 
 #define SCREW_IN_WIDTH 3.1
@@ -236,7 +239,7 @@ void DrawCase()
 	const float sfx_slide_offset = 5.25;
 	
 	// Note GPU cutout does not contain compensation.
-	const float gpu_thick = 54;     //XXX TODO: Add padding around GPU?
+	const float gpu_thick = 54.1;     //XXX TODO: Add padding around GPU?
 	const float gpu_height = 123.5;
 	const float material_above_gpu = 30;
 	const float gpu_offset_x = 2.6-right_justify; // Was 18
@@ -253,6 +256,8 @@ void DrawCase()
 	// For GPU holder / bracket.
 	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 64;
 				
+	float crossbrace_tongue_center = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
+
 
 	StartSVG( 809.6, 457 );
 	
@@ -456,7 +461,7 @@ void DrawCase()
 			if( plate == 0 )
 			{
 				const float edge_card_offset_y = 7;
-				const float edge_card_depth = 13;
+				const float edge_card_depth = 14;
 				const float edge_card_bottom_bump = 1;
 				PathStart( CUT );
 				cx = gpu_offset_x;
@@ -634,7 +639,6 @@ void DrawCase()
 			}
 
 			PathStart( CUT );
-			float crossbrace_tongue_center = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 			PathM( cx = 0, cy = 0 );
 			cy+=crossbrace_tongue_center/2-sidescrew_offset_y;
 			InsertT( cx, cy, 1, 0, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
@@ -841,7 +845,8 @@ void DrawCase()
 				cx = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 				cy = yplace;
 				DrawBox( CUT, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
-				Circle( CUT, whole_crossbrace_height/4-sidescrew_offset_y, cy, SCREW_WIDTH/2 );
+				Circle( CUT, crossbrace_tongue_center/2 -sidescrew_offset_y, cy, SCREW_WIDTH/2 );
+
 			}
 			
 			if( side == 0 )
