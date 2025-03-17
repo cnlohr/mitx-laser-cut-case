@@ -19,7 +19,9 @@
 // OKAY: Move mobo back some and towards the GPU
 
 // OKAY: Bump up mobo IO backplate by 4.5mm to 5mm whatever is cleaner.
-// TODO: Tighten up the T's, and mobo studs by 0.1mm
+// TODO: Tighten up the T's, and mobo studs by 0.1mm?
+// TODO: Tighten up holes for mobo spacers under mobo by 0.1mm?
+// TODO: Make cutout on side where GPU is for power cable.
 
 #include <stdio.h>
 #include <math.h>
