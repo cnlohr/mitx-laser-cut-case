@@ -19,7 +19,7 @@
 // OKAY: Move mobo back some and towards the GPU
 
 // OKAY: Bump up mobo IO backplate by 4.5mm to 5mm whatever is cleaner.
-
+// TODO: Tighten up the T's, and mobo studs by 0.1mm
 
 #include <stdio.h>
 #include <math.h>
