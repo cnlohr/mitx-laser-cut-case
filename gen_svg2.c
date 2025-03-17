@@ -758,7 +758,7 @@ void DrawCase()
 		}
 		
 		
-		// GPU Mounting Bar
+		// GPU Mounting Bar / Bracket
 		int mb = 0;
 		for( mb = 0; mb < 2; mb++ )
 		{
@@ -767,7 +767,7 @@ void DrawCase()
 			
 			float support_material_outside_t = 7;
 			float mounting_bar_thick = 12.5;
-			float mounting_bar_extraA = 5;
+			float mounting_bar_extraA = 4.5;
 			float mounting_bar_extraB = 0;
 			
 			// 11.5 and 32 from edge of GPU.
