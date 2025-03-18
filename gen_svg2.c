@@ -245,6 +245,8 @@ void DrawCase()
 	// Hole ready for use but not used in current design.
 	const float hole_center_plate_for_mobox = mb_tray_width - 10;
 	const float hole_center_plate_for_moboy = 175; //Also used for placment.
+
+	// Middle bracket not used anymore.
 	const float middle_bracket_offset = (top_tongue_offset + bottom_tongue_offset + middle_tongue_offset)/2;
 	
 	const float back_valence_width = 12.3;
@@ -260,7 +262,7 @@ void DrawCase()
 	const float gpu_rail_mount_from_top = 30.4;
 	const float gpu_brace_bar_width = 64;
 	
-	float whole_crossbrace_height = 9 + 54.5 + 85-64;
+	float whole_crossbrace_height = 9 + 54.3 /* This is more like GPU height */ + 85-64;
 	float sidescrew_offset_y = 10;
 	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
 
@@ -292,7 +294,7 @@ void DrawCase()
 		Circle( CUT, itx_x_offset+6.35, itx_y_offset+10.16+154.94, M3_MOUNTING_SCREW_WIDTH/2 );
 
 		Circle( CUT, insert_brace_t_x, bottom_tongue_offset, SCREW_WIDTH/2 );
-		Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, middle_bracket_offset, SCREW_WIDTH/2 );
+		//Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, middle_bracket_offset, SCREW_WIDTH/2 );  // No middle bracket
 		Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, top_tongue_offset, SCREW_WIDTH/2 );
 
 
@@ -430,6 +432,10 @@ void DrawCase()
 		int plate;
 		for( plate = 0; plate < 3; plate++ )
 		{
+
+			// No more middle plate
+			if( plate == 1 ) continue;
+
 			// Bottom plate.
 			if( plate == 0 )
 			{
@@ -771,7 +777,7 @@ void DrawCase()
 		for( mb = 0; mb < 2; mb++ )
 		{
 			centerx = 590;
-			centery = 140+mb*30;
+			centery = 62+mb*30;
 			
 			float support_material_outside_t = 7;
 			float mounting_bar_thick = 12.5;
@@ -865,6 +871,7 @@ void DrawCase()
 			// Change to 4 for alternate slotting patterns.
 			for( i = 0; i < 3; i++ )
 			{
+				if( i == 2 ) continue;  // Not drawing middle bracket.
 				float yplace = 0;
 				switch( i )
 				{
