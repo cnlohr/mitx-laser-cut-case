@@ -1,6 +1,5 @@
 //XXX TODO: 
 //  Measure riser height, for wher RTX3090 will live.
-//    Change gpu_base_over_mobo_plate = 47; // *****
 // Make sure the x/y location of the GPU makes sense with the riser.
 // Figure out how high the gap in the back must go.
 
@@ -27,6 +26,9 @@
 // TODO: Consider pushing center brace more towards PSU, and making it top-slot.
 // TODO: For USB, make it rectangular.
 // TODO: Move SFX up another 0.5mm
+// OKAY: Increase GPU thickness by 0.3mm
+// OKAY: Make motherboad back plate have a little more wiggle room.
+
 
 #include <stdio.h>
 #include <math.h>
@@ -251,15 +253,14 @@ void DrawCase()
 	const float sfx_slide_offset = 5.25;
 	
 	// Note GPU cutout does not contain compensation.
-	const float gpu_thick = 54.1;     //XXX TODO: Add padding around GPU?
+	const float gpu_thick = 54.1;     //Not actually GPU thickness.
 	const float gpu_height = 123.5;
-	const float material_above_gpu = 30;
+	const float material_above_gpu = 30; // This has more to do with GPU thickness.
 	const float gpu_offset_x = 2.6-right_justify; // Was 18
 	const float gpu_rail_mount_from_top = 30.4;
 	const float gpu_brace_bar_width = 64;
 	
-	const float gpu_base_over_mobo_plate = 47; // Measured
-	float whole_crossbrace_height = 9+gpu_thick + 85-64;
+	float whole_crossbrace_height = 9 + 54.5 + 85-64;
 	float sidescrew_offset_y = 10;
 	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
 
@@ -719,7 +720,7 @@ void DrawCase()
 				PathL( cx, cy );
 				cx += 9.5+3.0;
 				PathL( cx, cy );
-				PathL( cx, cy-=22 );
+				PathL( cx, cy-=22.5 );
 				cx+=163;
 				PathL( cx, cy );
 				PathL( cx, cy+=10 );
