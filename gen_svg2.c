@@ -19,8 +19,9 @@
 // OKAY: Move mobo back some and towards the GPU
 
 // OKAY: Bump up mobo IO backplate by 4.5mm to 5mm whatever is cleaner.
-// TODO: Tighten up the T's, and mobo studs by 0.1mm?
-// TODO: Tighten up holes for mobo spacers under mobo by 0.1mm?
+
+// OKAY: Tighten up the T's, and mobo studs by 0.1mm?
+// OKAY: Tighten up holes for mobo spacers under mobo by 0.1mm?
 // TODO: Make cutout on side where GPU is for power cable.
 // TODO: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
 
@@ -58,7 +59,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define TOOTH_WIDTH 30
 #define EAR 0.5
 #define M3_SCREW_WIDTH 3.2 // For PSU+USB connectors
-#define M3_MOUNTING_SCREW_WIDTH 4.4 // Inserts for Mobo Mount
+#define M3_MOUNTING_SCREW_WIDTH 4.2 // Inserts for Mobo Mount
 
 #define SCREW_IN_WIDTH 3.1
 
@@ -83,7 +84,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define T_DEPTH     5.0
 #define SCREW_EXTRA 2.0  // How much further the screw penetrates
 #define SCREW_WIDTH 3.1
-#define SCREW_WIDTH_T 4.25
+#define SCREW_WIDTH_T 4.0
 #endif
 
 // apply to both sides of inside cuts.
