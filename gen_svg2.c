@@ -25,6 +25,8 @@
 // TODO: Make cutout on side where GPU is for power cable.
 // TODO: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
 // TODO: Consider pushing center brace more towards PSU, and making it top-slot.
+// TODO: For USB, make it rectangular.
+// TODO: Move SFX up another 0.5mm
 
 #include <stdio.h>
 #include <math.h>
