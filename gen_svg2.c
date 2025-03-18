@@ -25,6 +25,7 @@
 // TODO: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
 // TODO: Consider pushing center brace more towards PSU, and making it top-slot.
 // TODO: For USB, make it rectangular.
+// TODO: Make test swatch with T's and circles.
 // TODO: Move SFX up another 0.5mm
 // OKAY: Increase GPU thickness by 0.3mm
 // OKAY: Make motherboad back plate have a little more wiggle room.
@@ -871,7 +872,7 @@ void DrawCase()
 			// Change to 4 for alternate slotting patterns.
 			for( i = 0; i < 3; i++ )
 			{
-				if( i == 2 ) continue;  // Not drawing middle bracket.
+				const char * material = (i==2)?ETCH:CUT;
 				float yplace = 0;
 				switch( i )
 				{
@@ -884,15 +885,15 @@ void DrawCase()
 				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE_TONGUE;
 				cx = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 				cy = yplace;
-				DrawBox( CUT, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
-				Circle( CUT, crossbrace_tongue_center/2 -sidescrew_offset_y, cy, SCREW_WIDTH/2 );
+				DrawBox( material, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
+				Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y, cy, SCREW_WIDTH/2 );
 
 			}
 			
 			if( side == 0 )
 			{
 				//Holes for PSU
-				float cx = whole_crossbrace_height;
+				float cx = whole_crossbrace_height-0.5; // -0.5 = move SFX up by 0.5mm
 				float cy = mb_tray_length + sfx_psu_offset_y;
 				Circle( CUT, cx-6.3, cy-6.4, M3_SCREW_WIDTH/2 );
 				Circle( CUT, cx-32.1, cy-6.4, M3_SCREW_WIDTH/2 );
