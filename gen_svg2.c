@@ -24,6 +24,7 @@
 // OKAY: Tighten up holes for mobo spacers under mobo by 0.1mm?
 // TODO: Make cutout on side where GPU is for power cable.
 // TODO: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
+// TODO: Consider pushing center brace more towards PSU, and making it top-slot.
 
 #include <stdio.h>
 #include <math.h>
