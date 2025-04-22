@@ -96,8 +96,8 @@ float crossbrace_panel_screw_offset = 10;
 // Heat insert M3
 #define NUT_WIDTH   5.9
 #define NUT_HEIGHT   .9
-#define T_DEPTH     5.2
-#define SCREW_EXTRA 1.4  // How much further the screw penetrates
+#define T_DEPTH     6.2
+#define SCREW_EXTRA 0.0  // How much further the screw penetrates
 #define SCREW_WIDTH 3.05
 #define SCREW_WIDTH_T 4.0
 #endif
@@ -166,10 +166,13 @@ void InsertT( float cx, float cy, float dirx, float diry, float screw_width, flo
 	PathLXForm( cx, cy, -(screw_width/2), tdepth, dirx, diry );
 	PathLXForm( cx, cy, -(nut_width)/2.0, tdepth, dirx, diry  );
 	PathLXForm( cx, cy, -(nut_width)/2.0, tdepth+nut_height, dirx, diry  );
-	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height, dirx, diry  );
-	PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height+screw_extra, dirx, diry  );
-	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height+screw_extra, dirx, diry  );
-	PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height, dirx, diry  );
+	if( screw_extra > 0.00001 )
+	{
+		PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height, dirx, diry  );
+		PathLXForm( cx, cy, -(screw_width/2), tdepth+nut_height+screw_extra, dirx, diry  );
+		PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height+screw_extra, dirx, diry  );
+		PathLXForm( cx, cy, +(screw_width/2), tdepth+nut_height, dirx, diry  );
+	}
 	PathLXForm( cx, cy, +(nut_width)/2.0, tdepth+nut_height, dirx, diry  );
 	PathLXForm( cx, cy, +(nut_width)/2.0, tdepth, dirx, diry  );
 	PathLXForm( cx, cy, +(screw_width/2), tdepth, dirx, diry  );
@@ -410,8 +413,9 @@ void DrawCase()
 		// For holding GPU in in the front.
 		cx += backplate_mount_lateral;
 		InsertT( cx,    cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
-		cx += 70;
+		cx += 35;
 		PathL( cx, cy );
+		cx += 35;
 		InsertT( cx, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 		PathL( cx = mb_tray_width, cy );
@@ -672,17 +676,18 @@ void DrawCase()
 				Circle( CUT, 185, 65, 16.1/2 );
 
 				// Add USB Type C Mount TODO.
-				float ucx = 145;
+				float ucx = 150;
 				float ucy = 65;
-				cx = ucx-21.5/2;
+				cx = ucx-18.6/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-				cx = ucx+21.5/2;
+				cx = ucx+18.6/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 
-
-				const float uround_width = 6;
+				// Aperture of 12mmx6mm
+				const float uround_width = 8;
+				const float uround_height = 2;
 				const float uround_radius = 2;
 
 				float phi = 0;
@@ -695,6 +700,10 @@ void DrawCase()
 						cx -= uround_width/2;
 					else
 						cx += uround_width/2;
+					if( cy < 0 )
+						cy -= uround_height/2;
+					else
+						cy += uround_height/2;
 					PathL( cx + ucx, cy + ucy );
 				}
 				PathClose();
@@ -1101,7 +1110,7 @@ void DrawCase()
 			PathL( cx, cy );
 			
 			#if defined( CROSSBRACE_WIDTH ) && ( !defined( nomiddleplate ) || !nomiddleplate )
-			#error Can't have a crossbrace with a middle plate
+			#error Cant have a crossbrace with a middle plate
 			#endif
 			//if( side == 0 )
 			{
