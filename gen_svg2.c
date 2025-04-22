@@ -49,6 +49,7 @@ const char * lastcolor = "black";
 float centerx, centery;
 void StartSVG( float width, float height ) { printf( "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" ); printf( "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%fmm\" height=\"%fmm\" x=\"0\" y=\"0\" viewBox=\"0 0 %f %f\">\n", width, height, width, height ); }
 void PathClose() { if( !inpath ) return; printf( "Z\" />\n" ); inpath = 0; }
+void PathStop() { if( !inpath ) return; printf( "\" />\n" ); inpath = 0; }
 void PathStart( const char * props ) { if( inpath ) PathClose(); lastcolor = props; printf( "<path %s d=\"", props ); inpath = 1; started = 0; }
 void PathM( float x, float y ) { if( !inpath ) PathStart(lastcolor); printf( "M%f %f ", x+centerx, y+centery ); started = 1; }
 void PathL( float x, float y ) { if( !inpath ) PathStart(lastcolor); printf( "%c%f %f ", started?'L':'M', x+centerx, y+centery ); started = 1; }
@@ -74,7 +75,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 #define SCREW_IN_WIDTH 3.1
 #define CROSSBRACE_WIDTH 65
-#define CROSSBRACE_OFFSET 84
+#define CROSSBRACE_OFFSET 94
 float crossbrace_panel_screw_offset = 10;
 
 #if 0
@@ -497,20 +498,26 @@ void DrawCase()
 				printf( "</g>" );
 #else
 				int logo[15] = {
-					0, 1, 1, 0, 1,
-					1, 0, 0, 1, 0,
-					0, 1, 1, 0, 1 };
+					1, 0, 1, 1, 0,
+					0, 1, 0, 0, 1,
+					1, 0, 1, 1, 0 };
 				int lx, ly;
+				float ss = 12.54; // Overall size, per
+				float ssa = 2.27; // Edge size
+				float ssb = 4.0; // Square size.
+				float edgesqueeze = 0.0;
+if(1)
 				for( ly = 0; ly < 3; ly++ )
+				{
+					float ssplace = -ss*2.5;
 					for( lx = 0; lx < 5; lx++ )
 					{
-						float ss = 10.0; // Overall size
-						float ssa = 1.5; // Edge size
-						float ssb = 3.0; // Square size.
-						
+						float usessplace = ssplace;
+
+						ssplace += ss;//(lx == 0 || lx == 2 || lx == 3 ) ? (ss-edgesqueeze) : ss;
 						if( logo[lx+ly*5] == 0 ) continue;
-						float tx =    lateral_width/2.0 + (lx-3) * ss;
-						float ty = CROSSBRACE_WIDTH/2.0 + (ly-1) * ss;
+						float tx =    lateral_width/2.0 + usessplace;
+						float ty = CROSSBRACE_WIDTH/2.0 + (ly-1) * (ss-edgesqueeze);
 						
 						PathStart( ETCH );
 						int first = 1;
@@ -531,8 +538,54 @@ void DrawCase()
 								PathL( dx + tx, dy + ty );
 							}
 						}
-						PathClose();						
+						PathClose();
 					}
+				}
+
+				// Interconnection
+				int mirror;
+				for( mirror = 0; mirror < 2; mirror++ )
+				{
+					float fm = mirror ? -1 : 1;
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 - fm * ssa );
+					PathL( lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 + fm * ssa );
+					PathStop();
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss* -2 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( lateral_width/2.0 + ss* -2 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathStop();
+
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
+					PathL( lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
+					PathStop();
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss* 1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( lateral_width/2.0 + ss* 1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathStop();
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
+					PathL( lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
+					PathStop();
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss*-1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( lateral_width/2.0 + ss*-1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathStop();
+
+					PathStart( ETCH );
+					PathL( lateral_width/2.0 + ss*0 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( lateral_width/2.0 + ss*0 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathStop();
+
+				}
+
 #endif
 
 				centerx -= MATERIAL_THICKNESS;
@@ -884,7 +937,7 @@ void DrawCase()
 			cy = gpu_brace_bar_width+support_material_outside_t;
 			PathL( -cy, cx );
 			cx += mounting_bar_thick;  // crossbar depth
-			cx += mounting_bar_extraA;
+			cx += mounting_bar_extraA*(mb==0?0:1);
 			PathL( -cy, cx );
 			cy -= support_material_outside_t;
 			//InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
@@ -897,7 +950,7 @@ void DrawCase()
 			
 			cy -= 4.8;
 			PathL( -cy, cx );
-			cx -= mounting_bar_extraA;
+			cx -= mounting_bar_extraA*(mb==0?0:1);
 			PathL( -cy, cx );
 			cy -= gpu_brace_bar_width-4.8*2;
 			PathL( -cy, cx );
@@ -991,10 +1044,18 @@ void DrawCase()
 				DrawBox( CUT, cx-56/2, cy-104/2, cx+56/2, cy+104/2, 0 );
 			}
 			
-			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4+14, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+6, 70, 170, GHEXSIZE, 0 );
 			if( side == 1 )
 			{
-				FillHexagons( CUT, (whole_crossbrace_height)/2.0+3, (hole_center_plate_for_moboy+bottom_tongue_offset)/2-2+18, 70, 90, GHEXSIZE, 1 );
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4+14, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+8, 70, 150, GHEXSIZE, 0 );
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0+3, (hole_center_plate_for_moboy+bottom_tongue_offset)/2-2+14, 70, 90, GHEXSIZE, 1 );
+			}
+			else
+			{
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4+14, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+6, 70, 150, GHEXSIZE, 0 );
+				FillHexagons( CUT,
+					(whole_crossbrace_height)/2.0-4+4.8,
+					(top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+86,
+					50, 40, GHEXSIZE, 1 );
 			}
 			//FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, 177-1, 30, 30, GHEXSIZE, 0 );
 			
@@ -1055,15 +1116,15 @@ void DrawCase()
 				{
 					float savecy = cy;
 					float savecx = cx;
-					cy -= 20;
+					cy -= 22;
 					PathL( cx, cy );
-					cx += 60; // How far down to cut
+					cx += 57; // How far down to cut
 					PathL( cx, cy );
-					cy -= 45;
+					cy -= 43;
 					PathL( cx, cy );
 					cx -= 35;
 					PathL( cx, cy );
-					cy += 20;
+					cy += 22;
 					PathL( cx, cy );
 					cx = savecx;
 					PathL( cx, cy );
