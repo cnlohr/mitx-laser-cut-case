@@ -506,37 +506,41 @@ void DrawCase()
 				float ssa = 2.27; // Edge size
 				float ssb = 4.0; // Square size.
 				float edgesqueeze = 0.0;
-if(1)
+				float sig_offset_x = -3;
 				for( ly = 0; ly < 3; ly++ )
 				{
 					float ssplace = -ss*2.5;
 					for( lx = 0; lx < 5; lx++ )
 					{
 						float usessplace = ssplace;
+						float oldsignx = 0;
+						float oldsigny = 0;
 
 						ssplace += ss;//(lx == 0 || lx == 2 || lx == 3 ) ? (ss-edgesqueeze) : ss;
 						if( logo[lx+ly*5] == 0 ) continue;
-						float tx =    lateral_width/2.0 + usessplace;
+						float tx =    lateral_width/2.0 + usessplace  +sig_offset_x;
 						float ty = CROSSBRACE_WIDTH/2.0 + (ly-1) * (ss-edgesqueeze);
 						
 						PathStart( ETCH );
-						int first = 1;
 						float theta;
+						float lastdx = 0;
+						float lastdy = 0;
 						for( theta = 0; theta < 3.141592*2; theta += 3.14159/12 )
 						{
 							float dx = sin( theta ) * ssa;
 							float dy = cos( theta ) * ssa;
+							if( ( NZSIGN( dx ) != oldsignx || NZSIGN( dy ) != oldsigny )  && oldsignx != 0 && oldsigny != 0 )
+							{
+								//fprintf( stderr, "%f %f  %f %f\n", oldsignx, oldsigny, NZSIGN( dx ), NZSIGN( dy ) );
+								PathL( lastdx + NZSIGN( dx ) * ssb + tx, lastdy + NZSIGN( dy ) * ssb + ty );
+							}
+							lastdx = dx;
+							lastdy = dy;
+							oldsignx = NZSIGN( dx );
+							oldsigny = NZSIGN( dy );
 							dx += NZSIGN( dx ) * ssb;
 							dy += NZSIGN( dy ) * ssb;
-							if( first )
-							{
-								first = 0;
-								PathM( dx + tx, dy + ty );
-							}
-							else
-							{
-								PathL( dx + tx, dy + ty );
-							}
+							PathL( dx + tx, dy + ty );
 						}
 						PathClose();
 					}
@@ -549,39 +553,39 @@ if(1)
 					float fm = mirror ? -1 : 1;
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 - fm * ssa );
-					PathL( lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 + fm * ssa );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 - fm * ssa );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 + fm * ssa );
 					PathStop();
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss* -2 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-					PathL( lateral_width/2.0 + ss* -2 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* -2 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* -2 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
 					PathStop();
 
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
-					PathL( lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
 					PathStop();
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss* 1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-					PathL( lateral_width/2.0 + ss* 1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* 1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss* 1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
 					PathStop();
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
-					PathL( lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
+					PathL( sig_offset_x+lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
+					PathL( sig_offset_x+lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
 					PathStop();
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss*-1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-					PathL( lateral_width/2.0 + ss*-1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss*-1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss*-1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
 					PathStop();
 
 					PathStart( ETCH );
-					PathL( lateral_width/2.0 + ss*0 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-					PathL( lateral_width/2.0 + ss*0 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss*0 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+					PathL( sig_offset_x+lateral_width/2.0 + ss*0 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
 					PathStop();
 
 				}
