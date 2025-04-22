@@ -609,15 +609,15 @@ void DrawCase()
 			{
 
 				// Power button
-				Circle( CUT, 185, 65, 16.2/2 );
+				Circle( CUT, 185, 65, 16.1/2 );
 
-				// Add USB Mount
+				// Add USB Type C Mount TODO.
 				float ucx = 145;
 				float ucy = 65;
-				cx = ucx-7.5;
+				cx = ucx-21.5/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-				cx = ucx+7.5;
+				cx = ucx+21.5/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 
@@ -646,17 +646,18 @@ void DrawCase()
 					for( ucy = 35; ucy < 50; ucy += 14 )
 					{
 						ucx = 150;
-						cx = ucx-15 - (uq*100);
+						cx = ucx-21.5/2 - (uq*100);
 						cy = ucy+(uq*15);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-						cx = ucx+15- (uq*100);
+						cx = ucx+21.5/2- (uq*100);
 						cy = ucy+(uq*15);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+						cx =ucx - (uq*100);
 
-
+#if 0
+						// Was a round aperture for the USB but this was ugly.
 						const float uround3_width = 10;
 						const float uround3_radius = 5;
-
 						phi = 0;
 						PathStart( CUT );
 						for( ; phi < 3.14159*2; phi += 0.001 )
@@ -671,6 +672,9 @@ void DrawCase()
 							PathL( cx + ucx, cy + ucy );
 						}
 						PathClose();
+#endif
+						DrawBox( CUT, cx-15/2.0, cy-8/2.0, cx+15/2.0, cy+8/2.0, 0 );
+
 					}
 				}
 
