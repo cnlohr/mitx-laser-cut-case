@@ -23,13 +23,15 @@
 // OKAY: Tighten up holes for mobo spacers under mobo by 0.1mm?
 // TODO: Make cutout on side where GPU is for power cable.
 // TODO: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
-// TODO: Consider pushing center brace more towards PSU, and making it top-slot.
+// OKAY: Consider pushing center brace more towards PSU, and making it top-slot.
 // TODO: For USB, make it rectangular.
 // TODO: Make test swatch with T's and circles.
-// TODO: Move SFX up another 0.5mm
+// OKAY: Move SFX up another 0.5mm
 // OKAY: Increase GPU thickness by 0.3mm
 // OKAY: Make motherboad back plate have a little more wiggle room.
 
+// OKAY: Make top-plate, able to hold feed for GPU
+// TODO: USB, buttons, etc.
 
 #include <stdio.h>
 #include <math.h>
@@ -68,6 +70,9 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define M3_MOUNTING_SCREW_WIDTH 4.2 // Inserts for Mobo Mount
 
 #define SCREW_IN_WIDTH 3.1
+#define CROSSBRACE_WIDTH 65
+#define CROSSBRACE_OFFSET 84
+float crossbrace_panel_screw_offset = 10;
 
 #if 0
 // Regular Nuts
@@ -104,6 +109,11 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define DO_CASE_1 1
 #define DO_CASE_2 1
 #define DO_CASE_3 1
+
+// No mid-plate, instead use a top-plate.
+#define nomiddleplate 1
+
+#define NZSIGN( x ) (( x < 0 )?-1:1)
 
 void DrawBox( const char * type, float x1, float y1, float x2, float y2, float ear )
 {
@@ -394,8 +404,11 @@ void DrawCase()
 		*/
 
 		// For holding GPU in in the front.
-		InsertT( backplate_mount_lateral, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
-		InsertT( backplate_mount_lateral+70, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+		cx += backplate_mount_lateral;
+		InsertT( cx,    cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+		cx += 70;
+		PathL( cx, cy );
+		InsertT( cx, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 		PathL( cx = mb_tray_width, cy );
 		PathL( cx, cy-=mb_tongue_spacing/2 );
@@ -434,9 +447,6 @@ void DrawCase()
 		for( plate = 0; plate < 3; plate++ )
 		{
 
-			// No more middle plate
-			if( plate == 1 ) continue;
-
 			// Bottom plate.
 			if( plate == 0 )
 			{
@@ -453,6 +463,94 @@ void DrawCase()
 				centerx = mb_tray_width+MATERIAL_THICKNESS*3+.5+1;
 				centery = 230;
 			}
+
+			// No more middle plate.  Instead draw a crossbrace.
+			if( plate == 1 && nomiddleplate )
+			{
+				//Signature
+				float lateral_width = mb_tray_length  + MATERIAL_THICKNESS*1.5;
+
+#if 0
+				printf( "<g transform=\"translate(182,305)\">" );
+				printf( "<g transform=\"rotate(-45)\">" );
+				PathStart( ETCH );
+				cx =-10;
+				cy =-10;
+				float tx, ty;
+				float ixsx = .2;
+				float ixsy = .2;
+				float ixsx2 = .355;
+				float ixsx21 = .28;
+				tx = cx - 20*ixsx21; ty = cy;  PathM( tx, ty );
+				tx = cx - 10*ixsx2; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 10*ixsx2; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 20*ixsx21; ty = cy;  PathL( tx, ty );
+				PathClose();
+				printf( "</g>" );
+				printf( "</g>" );
+#else
+				int logo[15] = {
+					0, 1, 1, 0, 1,
+					1, 0, 0, 1, 0,
+					0, 1, 1, 0, 1 };
+				int lx, ly;
+				for( ly = 0; ly < 3; ly++ )
+					for( lx = 0; lx < 5; lx++ )
+					{
+						float ss = 10.0; // Overall size
+						float ssa = 1.5; // Edge size
+						float ssb = 3.0; // Square size.
+						
+						if( logo[lx+ly*5] == 0 ) continue;
+						float tx =    lateral_width/2.0 + (lx-3) * ss;
+						float ty = CROSSBRACE_WIDTH/2.0 + (ly-1) * ss;
+						
+						PathStart( ETCH );
+						int first = 1;
+						float theta;
+						for( theta = 0; theta < 3.141592*2; theta += 3.14159/12 )
+						{
+							float dx = sin( theta ) * ssa;
+							float dy = cos( theta ) * ssa;
+							dx += NZSIGN( dx ) * ssb;
+							dy += NZSIGN( dy ) * ssb;
+							if( first )
+							{
+								first = 0;
+								PathM( dx + tx, dy + ty );
+							}
+							else
+							{
+								PathL( dx + tx, dy + ty );
+							}
+						}
+						PathClose();						
+					}
+#endif
+
+				centerx -= MATERIAL_THICKNESS;
+				Circle( CUT, MATERIAL_THICKNESS/2, crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
+				Circle( CUT, MATERIAL_THICKNESS/2, CROSSBRACE_WIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
+				Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, CROSSBRACE_WIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
+				Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
+
+				PathStart( CUT );
+				PathM( cx = 0, cy = 0 );
+				cx += lateral_width;
+				PathL( cx, cy );
+				cy += CROSSBRACE_WIDTH;
+				PathL( cx, cy );			
+				cx -= lateral_width;
+				PathL( cx, cy );			
+				PathClose();
+			
+				continue;
+			}
+
 			
 			const float handle_bump = 29;
 			const float handle_width = 56;
@@ -506,19 +604,20 @@ void DrawCase()
 
 
 
+			// Front plate.
 			if( plate == 2 )
 			{
 
 				// Power button
-				Circle( CUT, 185, 65, 16.2/2 );
+				Circle( CUT, 185, 65, 16.1/2 );
 
-				// Add USB Mount
+				// Add USB Type C Mount TODO.
 				float ucx = 145;
 				float ucy = 65;
-				cx = ucx-7.5;
+				cx = ucx-21.5/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-				cx = ucx+7.5;
+				cx = ucx+21.5/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 
@@ -547,17 +646,18 @@ void DrawCase()
 					for( ucy = 35; ucy < 50; ucy += 14 )
 					{
 						ucx = 150;
-						cx = ucx-15 - (uq*100);
+						cx = ucx-21.5/2 - (uq*100);
 						cy = ucy+(uq*15);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
-						cx = ucx+15- (uq*100);
+						cx = ucx+21.5/2- (uq*100);
 						cy = ucy+(uq*15);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
+						cx =ucx - (uq*100);
 
-
+#if 0
+						// Was a round aperture for the USB but this was ugly.
 						const float uround3_width = 10;
 						const float uround3_radius = 5;
-
 						phi = 0;
 						PathStart( CUT );
 						for( ; phi < 3.14159*2; phi += 0.001 )
@@ -572,6 +672,9 @@ void DrawCase()
 							PathL( cx + ucx, cy + ucy );
 						}
 						PathClose();
+#endif
+						DrawBox( CUT, cx-15/2.0, cy-8/2.0, cx+15/2.0, cy+8/2.0, 0 );
+
 					}
 				}
 
@@ -586,30 +689,6 @@ void DrawCase()
 					PathL( cx + -18, cy + 14 );
 					PathClose();
 				}
-
-				printf( "<g transform=\"translate(110,380)\">" );
-				printf( "<g transform=\"rotate(-45)\">" );
-
-				//Signature
-				PathStart( ETCH );
-				cx =-10;
-				cy =-10;
-				float tx, ty;
-				float ixsx = .2;
-				float ixsy = .2;
-				float ixsx2 = .355;
-				float ixsx21 = .28;
-				tx = cx - 20*ixsx21; ty = cy;  PathM( tx, ty );
-				tx = cx - 10*ixsx2; ty = cy - 10*ixsy;  PathL( tx, ty );
-				tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
-				tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
-				tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx - 10*ixsx2; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx - 20*ixsx21; ty = cy;  PathL( tx, ty );
-				PathClose();
-				printf( "</g>" );
-				printf( "</g>" );
 
 				//FillHexagons( CUT, 74, 71, 115, 20, GHEXSIZE, 0 );
 			}
@@ -842,6 +921,8 @@ void DrawCase()
 
 	}
 	
+	
+	// The sides of the case.
 	if( DO_CASE_3 )
 	{
 		int side;
@@ -872,7 +953,8 @@ void DrawCase()
 			// Change to 4 for alternate slotting patterns.
 			for( i = 0; i < 3; i++ )
 			{
-				const char * material = (i==2)?ETCH:CUT;
+				if( i == 2 && nomiddleplate ) continue;
+				const char * material = CUT;
 				float yplace = 0;
 				switch( i )
 				{
@@ -909,7 +991,7 @@ void DrawCase()
 			FillHexagons( CUT, (whole_crossbrace_height)/2.0-4+14, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+6, 70, 170, GHEXSIZE, 0 );
 			if( side == 1 )
 			{
-				FillHexagons( CUT, (whole_crossbrace_height)/2.0+10, (hole_center_plate_for_moboy+bottom_tongue_offset)/2-2, 70, 130, GHEXSIZE, 0 );
+				FillHexagons( CUT, (whole_crossbrace_height)/2.0+3, (hole_center_plate_for_moboy+bottom_tongue_offset)/2-2+18, 70, 90, GHEXSIZE, 1 );
 			}
 			//FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, 177-1, 30, 30, GHEXSIZE, 0 );
 			
@@ -918,7 +1000,8 @@ void DrawCase()
 			//whole_crossbrace_height
 			PathStart( CUT );
 			PathM( cx, cy );
-			cx+=whole_crossbrace_height + MATERIAL_THICKNESS;
+			
+			cx=whole_crossbrace_height + MATERIAL_THICKNESS;
 			PathL( cx, cy );
 			cy += mb_tongue_spacing/2;
 			cy += foot_height/2;
@@ -946,7 +1029,54 @@ void DrawCase()
 			cy -= mb_tongue_spacing/2;
 			PathL( cx, cy );
 			cx=0;
+
 			PathL( cx, cy );
+			
+			#if defined( CROSSBRACE_WIDTH ) && ( !defined( nomiddleplate ) || !nomiddleplate )
+			#error Can't have a crossbrace with a middle plate
+			#endif
+			//if( side == 0 )
+			{
+				cy -= CROSSBRACE_OFFSET;
+				PathL( cx, cy );
+				cx += MATERIAL_THICKNESS;
+				PathL( cx, cy );
+				PathL( cx+EAR, cy+EAR );
+				PathL( cx, cy );
+
+				cy -= crossbrace_panel_screw_offset;
+				InsertT( cx, cy, 1, 0, -SCREW_WIDTH_T, -NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				cy += crossbrace_panel_screw_offset;
+
+				if( side == 1 )
+				{
+					float savecy = cy;
+					float savecx = cx;
+					cy -= 20;
+					PathL( cx, cy );
+					cx += 60; // How far down to cut
+					PathL( cx, cy );
+					cy -= 45;
+					PathL( cx, cy );
+					cx -= 35;
+					PathL( cx, cy );
+					cy += 20;
+					PathL( cx, cy );
+					cx = savecx;
+					PathL( cx, cy );
+					cy = savecy;
+				}
+				
+				cy -= CROSSBRACE_WIDTH - crossbrace_panel_screw_offset;
+				InsertT( cx, cy, 1, 0, -SCREW_WIDTH_T, -NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				cy -= crossbrace_panel_screw_offset;
+				PathL( cx, cy );
+				PathL( cx+EAR, cy-EAR );
+				PathL( cx, cy );
+				cx -= MATERIAL_THICKNESS;
+				PathL( cx, cy );
+			}
+			
 			PathClose();
 			
 			//if( side == 1 )
