@@ -113,6 +113,8 @@ float crossbrace_panel_screw_offset = 10;
 // No mid-plate, instead use a top-plate.
 #define nomiddleplate 1
 
+#define NZSIGN( x ) (( x < 0 )?-1:1)
+
 void DrawBox( const char * type, float x1, float y1, float x2, float y2, float ear )
 {
 	PathStart( type );
@@ -465,8 +467,72 @@ void DrawCase()
 			// No more middle plate.  Instead draw a crossbrace.
 			if( plate == 1 && nomiddleplate )
 			{
-				centerx -= MATERIAL_THICKNESS;
+				//Signature
 				float lateral_width = mb_tray_length  + MATERIAL_THICKNESS*1.5;
+
+#if 0
+				printf( "<g transform=\"translate(182,305)\">" );
+				printf( "<g transform=\"rotate(-45)\">" );
+				PathStart( ETCH );
+				cx =-10;
+				cy =-10;
+				float tx, ty;
+				float ixsx = .2;
+				float ixsy = .2;
+				float ixsx2 = .355;
+				float ixsx21 = .28;
+				tx = cx - 20*ixsx21; ty = cy;  PathM( tx, ty );
+				tx = cx - 10*ixsx2; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
+				tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 10*ixsx2; ty = cy + 10*ixsy;  PathL( tx, ty );
+				tx = cx - 20*ixsx21; ty = cy;  PathL( tx, ty );
+				PathClose();
+				printf( "</g>" );
+				printf( "</g>" );
+#else
+				int logo[15] = {
+					0, 1, 1, 0, 1,
+					1, 0, 0, 1, 0,
+					0, 1, 1, 0, 1 };
+				int lx, ly;
+				for( ly = 0; ly < 3; ly++ )
+					for( lx = 0; lx < 5; lx++ )
+					{
+						float ss = 10.0; // Overall size
+						float ssa = 1.5; // Edge size
+						float ssb = 3.0; // Square size.
+						
+						if( logo[lx+ly*5] == 0 ) continue;
+						float tx =    lateral_width/2.0 + (lx-3) * ss;
+						float ty = CROSSBRACE_WIDTH/2.0 + (ly-1) * ss;
+						
+						PathStart( ETCH );
+						int first = 1;
+						float theta;
+						for( theta = 0; theta < 3.141592*2; theta += 3.14159/12 )
+						{
+							float dx = sin( theta ) * ssa;
+							float dy = cos( theta ) * ssa;
+							dx += NZSIGN( dx ) * ssb;
+							dy += NZSIGN( dy ) * ssb;
+							if( first )
+							{
+								first = 0;
+								PathM( dx + tx, dy + ty );
+							}
+							else
+							{
+								PathL( dx + tx, dy + ty );
+							}
+						}
+						PathClose();						
+					}
+#endif
+
+				centerx -= MATERIAL_THICKNESS;
 				Circle( CUT, MATERIAL_THICKNESS/2, crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
 				Circle( CUT, MATERIAL_THICKNESS/2, CROSSBRACE_WIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
 				Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, CROSSBRACE_WIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
@@ -619,30 +685,6 @@ void DrawCase()
 					PathL( cx + -18, cy + 14 );
 					PathClose();
 				}
-
-				printf( "<g transform=\"translate(110,380)\">" );
-				printf( "<g transform=\"rotate(-45)\">" );
-
-				//Signature
-				PathStart( ETCH );
-				cx =-10;
-				cy =-10;
-				float tx, ty;
-				float ixsx = .2;
-				float ixsy = .2;
-				float ixsx2 = .355;
-				float ixsx21 = .28;
-				tx = cx - 20*ixsx21; ty = cy;  PathM( tx, ty );
-				tx = cx - 10*ixsx2; ty = cy - 10*ixsy;  PathL( tx, ty );
-				tx = cx; ty = cy - 10*ixsy;  PathL( tx, ty );
-				tx = cx + 20*ixsx; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx + 20*ixsx; ty = cy - 10*ixsy;  PathL( tx, ty );
-				tx = cx; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx - 10*ixsx2; ty = cy + 10*ixsy;  PathL( tx, ty );
-				tx = cx - 20*ixsx21; ty = cy;  PathL( tx, ty );
-				PathClose();
-				printf( "</g>" );
-				printf( "</g>" );
 
 				//FillHexagons( CUT, 74, 71, 115, 20, GHEXSIZE, 0 );
 			}
