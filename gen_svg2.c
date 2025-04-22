@@ -3,7 +3,7 @@
 // Make sure the x/y location of the GPU makes sense with the riser.
 // Figure out how high the gap in the back must go.
 
-// TODO: Can I acces the CPU 12V Power? No (Make sure as part of the later step, Mobo moves away from the wall by 0.5mm)
+// OKAY I THINK: Can I acces the CPU 12V Power? No (Make sure as part of the later step, Mobo moves away from the wall by 0.5mm)
 //
 // OKAY: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
 // OKAY: Tongues on sides don't line up.
@@ -21,17 +21,20 @@
 
 // OKAY: Tighten up the T's, and mobo studs by 0.1mm?
 // OKAY: Tighten up holes for mobo spacers under mobo by 0.1mm?
-// TODO: Make cutout on side where GPU is for power cable.
-// TODO: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
+// OKAY: Make cutout on side where GPU is for power cable.
+// OKAY: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
 // OKAY: Consider pushing center brace more towards PSU, and making it top-slot.
-// TODO: For USB, make it rectangular.
+// OKAY: For USB, make it rectangular.
 // TODO: Make test swatch with T's and circles.
 // OKAY: Move SFX up another 0.5mm
 // OKAY: Increase GPU thickness by 0.3mm
 // OKAY: Make motherboad back plate have a little more wiggle room.
 
 // OKAY: Make top-plate, able to hold feed for GPU
-// TODO: USB, buttons, etc.
+// TODO: USB type C
+// TODO: Double-Check 12V ATX CPU power access.
+// OKAY: Update T's, Circles, accordingly.  0.1mm wider at widest, 0.05mm thicker. 0.2mm deeper.
+// OKAY: Shrink holes for M3 just a hair 0.05mm smaller
 
 #include <stdio.h>
 #include <math.h>
@@ -90,11 +93,11 @@ float crossbrace_panel_screw_offset = 10;
 #define SCREW_WIDTH 3.1
 #else
 // Heat insert M3
-#define NUT_WIDTH   5.8
-#define NUT_HEIGHT   .85
-#define T_DEPTH     5.0
-#define SCREW_EXTRA 2.0  // How much further the screw penetrates
-#define SCREW_WIDTH 3.1
+#define NUT_WIDTH   5.9
+#define NUT_HEIGHT   .9
+#define T_DEPTH     5.2
+#define SCREW_EXTRA 1.4  // How much further the screw penetrates
+#define SCREW_WIDTH 3.05
 #define SCREW_WIDTH_T 4.0
 #endif
 
