@@ -275,7 +275,7 @@ void DrawCase()
 	const float sfx_slide_offset = 5.25;
 	
 	// Note GPU cutout does not contain compensation.
-	const float gpu_thick = 53.8;     //Not actually GPU thickness.
+	const float gpu_thick = 53.5;     //Not actually GPU thickness.
 	const float gpu_height = 123.5;
 	const float material_above_gpu = 30; // This has more to do with GPU thickness.
 	const float gpu_offset_x = 2.6-right_justify; // Was 18
