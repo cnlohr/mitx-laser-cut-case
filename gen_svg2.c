@@ -36,6 +36,8 @@
 // OKAY: Update T's, Circles, accordingly.  0.1mm wider at widest, 0.05mm thicker. 0.2mm deeper.
 // OKAY: Shrink holes for M3 just a hair 0.05mm smaller
 
+// TODO: Move T 0.5mm toward surface.
+
 #include <stdio.h>
 #include <math.h>
 
@@ -94,12 +96,12 @@ float crossbrace_panel_screw_offset = 10;
 #define SCREW_WIDTH 3.1
 #else
 // Heat insert M3
-#define NUT_WIDTH   5.9
+#define NUT_WIDTH   6
 #define NUT_HEIGHT   .9
-#define T_DEPTH     6.2
+#define T_DEPTH     5.5
 #define SCREW_EXTRA 0.0  // How much further the screw penetrates
 #define SCREW_WIDTH 3.05
-#define SCREW_WIDTH_T 4.0
+#define SCREW_WIDTH_T 4.03
 #endif
 
 // apply to both sides of inside cuts.
@@ -273,7 +275,7 @@ void DrawCase()
 	const float sfx_slide_offset = 5.25;
 	
 	// Note GPU cutout does not contain compensation.
-	const float gpu_thick = 54.1;     //Not actually GPU thickness.
+	const float gpu_thick = 53.8;     //Not actually GPU thickness.
 	const float gpu_height = 123.5;
 	const float material_above_gpu = 30; // This has more to do with GPU thickness.
 	const float gpu_offset_x = 2.6-right_justify; // Was 18
