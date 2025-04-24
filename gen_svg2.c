@@ -1,8 +1,3 @@
-//XXX TODO: 
-//  Measure riser height, for wher RTX3090 will live.
-// Make sure the x/y location of the GPU makes sense with the riser.
-// Figure out how high the gap in the back must go.
-
 // OKAY I THINK: Can I acces the CPU 12V Power? No (Make sure as part of the later step, Mobo moves away from the wall by 0.5mm)
 //
 // OKAY: Make all T's a little wider. Make hat thin part 0.2mm wider. ACTUAL thickness of stalk is 4.41mm, actual width is 3.21mm.
@@ -25,18 +20,31 @@
 // OKAY: Consider making joining termination top-with-bottom to be to put T on side so the tongue itself can be screwd in, so that the top can be removed directly.
 // OKAY: Consider pushing center brace more towards PSU, and making it top-slot.
 // OKAY: For USB, make it rectangular.
-// TODO: Make test swatch with T's and circles.
+// OKAY: Make test swatch with T's and circles.
 // OKAY: Move SFX up another 0.5mm
 // OKAY: Increase GPU thickness by 0.3mm
 // OKAY: Make motherboad back plate have a little more wiggle room.
-
 // OKAY: Make top-plate, able to hold feed for GPU
 // TODO: USB type C
 // TODO: Double-Check 12V ATX CPU power access.
 // OKAY: Update T's, Circles, accordingly.  0.1mm wider at widest, 0.05mm thicker. 0.2mm deeper.
 // OKAY: Shrink holes for M3 just a hair 0.05mm smaller
+// OKAY: Move T 0.5mm toward surface.
 
-// TODO: Move T 0.5mm toward surface.
+// TODO: Consider flipping PSU to front. 
+// TODO: Make it so the back can connect or be pulled off by only pulling upward.
+// TODO: Make sure back piece has a lot of clearance for the CPU power connector.
+// TODO: Increase side height by 10mm
+// TODO: Make top brace brace around CPU cooler + over GPU.
+// TODO: Make Motherboard plate use 120 LEDs/m (or less)
+// TODO: Widen aperture for motherboard LEDs to 4.8mm.
+// TODO: Make back pull-off-able.
+// TODO: Shrink front-part of USB-C connector.
+// TODO: Move power button, maybe tighter with the USB connectors?
+
+// Notes:
+// * Pre-drill with .118
+// * Pre-drill motherboard back as well as all others.
 
 #include <stdio.h>
 #include <math.h>
