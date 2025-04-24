@@ -26,7 +26,7 @@
 // OKAY: Make motherboad back plate have a little more wiggle room.
 // OKAY: Make top-plate, able to hold feed for GPU
 // TODO: USB type C
-// TODO: Double-Check 12V ATX CPU power access.
+// OKAY: Double-Check 12V ATX CPU power access. -- Will be removing back panel mounting for ATX side.
 // OKAY: Update T's, Circles, accordingly.  0.1mm wider at widest, 0.05mm thicker. 0.2mm deeper.
 // OKAY: Shrink holes for M3 just a hair 0.05mm smaller
 // OKAY: Move T 0.5mm toward surface.
@@ -82,6 +82,9 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define EAR 0.5
 #define M3_SCREW_WIDTH 3.2 // For PSU+USB connectors
 #define M3_MOUNTING_SCREW_WIDTH 4.2 // Inserts for Mobo Mount
+
+#define ONLY_PARTIAL_BACKSIDE
+
 
 #define SCREW_IN_WIDTH 3.1
 #define CROSSBRACE_WIDTH 65
@@ -815,7 +818,9 @@ void DrawCase()
 			{
 				const float edge_card_offset_y = 7;
 				const float edge_card_depth = 14;
-				const float edge_card_bottom_bump = 1;
+				const float edge_card_bottom_bump = 6;
+				const float edge_card_top_bump = 5;
+
 				//PathStart( CUT );
 				//cx = gpu_offset_x;
 				//cy = material_above_gpu;
@@ -826,13 +831,13 @@ void DrawCase()
 				cx += gpu_height;
 				PathL( cx, cy );
 
-				cy += edge_card_offset_y;
-				PathL( cx, cy );
 				if( plate == 0 )
 				{
+					cy += edge_card_offset_y-edge_card_top_bump;
+					PathL( cx, cy );
 					cx += edge_card_depth;
 					PathL( cx, cy );
-					cy += edge_card_offset_y-edge_card_bottom_bump;
+					cy += edge_card_offset_y-edge_card_bottom_bump + edge_card_top_bump;
 					PathL( cx, cy );
 					cx -= edge_card_depth;
 					PathL( cx, cy );
@@ -841,6 +846,8 @@ void DrawCase()
 				}
 				else
 				{
+					cy += edge_card_offset_y;
+					PathL( cx, cy );
 					cy += edge_card_offset_y;
 					PathL( cx, cy );
 				}
