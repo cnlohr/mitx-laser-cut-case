@@ -50,8 +50,11 @@
 // OKAY: Extend T a bit again
 // OKAY?: Fix GPU height
 
-// TODO: Top plate extends too far forward.
-// TODO: Side panel on left side missing tongue hole
+// OKAY: Top plate extends too far forward.
+// OKAY: Side panel on left side missing tongue hole
+
+// TODO: Front plate does not quiiiite line up.
+// TODO: Side top stub in wrong place?
 
 // Notes:
 // * Pre-drill with .118
@@ -99,8 +102,6 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 #define FRONTPLATE_BASEWIDTH 65 // (Actually front-to-back)
 #define FRONTPLATE_OFFSET 94
 float frontplate_calc_mid_width = 0;
-
-float crossbrace_panel_screw_offset = 10;
 
 #if 0
 // Regular Nuts
@@ -299,7 +300,8 @@ void DrawCase()
 	centerx = MATERIAL_THICKNESS+CUT_CLEARANCE+1;
 	centery = 1;
 
-	
+	const float tongue_offset = 5; // Only for front- and back- of case.
+	const float crossbrace_panel_screw_offset = MATERIAL_THICKNESS;
 	const float right_justify = 2.5;
 	const float mb_tongue_mm = 40;
 	const float mb_tray_length = 314;
@@ -307,8 +309,10 @@ void DrawCase()
 	const float itx_y_offset = 1.0;
 	const float mb_tray_width = 314-2 - right_justify;  // was 172
 	const int num_mb_tongues = 3;
-	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-5;
-	const float top_tongue_offset = MATERIAL_THICKNESS/2+5;
+	const float bottom_tongue_offset = mb_tray_length-MATERIAL_THICKNESS/2-tongue_offset;
+	const float top_tongue_offset = MATERIAL_THICKNESS/2+tongue_offset;
+	const float  face_plate_height = mb_tray_length + tongue_offset*2;
+
 	const float middle_tongue_offset = 24;
 	const int num_leds_edge = 30;
 	const float led_mb_center_x = itx_x_offset+17;
@@ -632,11 +636,11 @@ void DrawCase()
 			{
 
 				// Power button
-				Circle( CUT, 158, 78, 16.1/2 );
+				Circle( CUT, 157, 35, 16.1/2 );
 
 				// Add USB Type C Mount TODO.
-				float ucx = 158;
-				float ucy = 62;
+				float ucx = 157;
+				float ucy = 57;
 				cx = ucx-18.6/2;
 				cy = ucy;
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
@@ -645,8 +649,8 @@ void DrawCase()
 				Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 
 				// Aperture of 12mmx6mm
-				const float uround_width = 8;
-				const float uround_height = 2;
+				const float uround_width = 8.6;
+				const float uround_height = 5.6;
 				const float uround_radius = 2;
 
 				float phi = 0;
@@ -671,14 +675,14 @@ void DrawCase()
 				int uq = 0;
 				for( uq = 0; uq < 2; uq++ )
 				{
-					for( ucy = 35; ucy < 50; ucy += 14 )
+					for( ucy = 70; ucy < 70+16; ucy += 10 )
 					{
-						ucx = 158;
+						ucx = 157;
 						cx = ucx-21.5/2 - (uq*100);
-						cy = ucy+(uq*15);
+						cy = ucy-(uq*18);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 						cx = ucx+21.5/2- (uq*100);
-						cy = ucy+(uq*15);
+						cy = ucy-(uq*18);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 						cx =ucx - (uq*100);
 						
@@ -692,7 +696,7 @@ void DrawCase()
 				// Draw outline around extra USB spacer
 				{
 					PathStart( CUT );
-					cx = 58;
+					cx = 57;
 					cy = 57;
 					PathL( cx + -18, cy -14 );
 					PathL( cx + 18, cy -14 );
@@ -1005,9 +1009,7 @@ void DrawCase()
 
 	}
 
-	// Only used if there's a faceplate.
-	float face_plate_height = 0;	
-	
+
 	// The sides of the case.
 	if( DO_CASE_3 )
 	{
@@ -1049,21 +1051,19 @@ void DrawCase()
 					case 3: yplace = hole_center_plate_for_moboy; break; // Not used now.
 					case 2: yplace = middle_bracket_offset; break;
 				}
-				float matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE;
+				float matplusclear = tongue_offset;//MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE;
 				float twplusclear = mb_tongue_mm/2 + CUT_CLEARANCE_TONGUE;
 				cx = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 				cy = yplace;
 
 				if( BACKPLATE_GOES_UP && i == 0 )
 				{
-					if( side == 0 )
+					if( side == 1 || !BACKPLATE_DOES_NOT_GO_BEHIND_CPU)
 					{
 						//crossbrace_tongue_center/2-sidescrew_offset_y; 
 						//DrawBox( material, cx-twplusclear, cy-matplusclear, cx+0, cy+matplusclear, EAR );
-						if( !BACKPLATE_DOES_NOT_GO_BEHIND_CPU )
-							Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE, cy, SCREW_WIDTH/2 );
+						Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE, cy, SCREW_WIDTH/2 );
 					}
-					face_plate_height = sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE;
 				}
 				else
 				{
@@ -1116,7 +1116,7 @@ void DrawCase()
 			if( BACKPLATE_GOES_UP && side == 1 )
 			{
 				cx = MATERIAL_THICKNESS;
-				cy = MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE + MATERIAL_THICKNESS;
+				cy = tongue_offset + MATERIAL_THICKNESS;
 				PathM( cx, cy );
 				cx = BACKPLATE_PARTIAL_TONGUE;
 				PathL( cx, cy );
@@ -1171,9 +1171,9 @@ void DrawCase()
 
 			{
 				cy -= FRONTPLATE_OFFSET;
-				front_plate_top_plate_extend_y = FRONTPLATE_OFFSET  - (MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE);
+				front_plate_top_plate_extend_y = FRONTPLATE_OFFSET  - (tongue_offset);
 				//matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE
-				face_plate_height -= cy;
+				// But instead let's pretend it's tongue_offset
 				PathL( cx, cy );
 				cx += MATERIAL_THICKNESS;
 				PathL( cx, cy );
@@ -1252,7 +1252,10 @@ void DrawCase()
 		centerx = 337.7;
 		centery = 150;
 		
-
+		float correction_from_incorrect_values_above = tongue_offset - MATERIAL_THICKNESS/2;
+		float back_of_plate_y = -face_plate_height+FRONTPLATE_BASEWIDTH+front_plate_top_plate_extend_y + MATERIAL_THICKNESS*2 + tongue_offset*2 + correction_from_incorrect_values_above*2;
+		float front_of_plate_y = front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH - correction_from_incorrect_values_above*0;
+		
 		//Signature
 		float lateral_width = mb_tray_length  + MATERIAL_THICKNESS*1.5;
 
@@ -1376,6 +1379,7 @@ void DrawCase()
 
 #endif
 
+
 		centerx -= MATERIAL_THICKNESS;
 		
 		float screwycenter = ((crossbrace_panel_screw_offset - TOP_PLATE_BACK_SCREW_OFFSET) + crossbrace_panel_screw_offset)/2.0;
@@ -1387,11 +1391,11 @@ void DrawCase()
 		Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
 
 		// BAck plate hole.
-		Circle( CUT, frontplate_calc_mid_width/2 + MATERIAL_THICKNESS/2, FRONTPLATE_BASEWIDTH+face_plate_height+MATERIAL_THICKNESS/2-MATERIAL_THICKNESS- MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
+		Circle( CUT, frontplate_calc_mid_width/2 + MATERIAL_THICKNESS/2, back_of_plate_y- MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
 
 		// Hole to front plate.
-		Circle( CUT, top_plate_front_panel_min_x + 10, front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
-		Circle( CUT, top_plate_front_panel_max_x - 10, front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
+		Circle( CUT, top_plate_front_panel_min_x + 10, front_of_plate_y-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
+		Circle( CUT, top_plate_front_panel_max_x - 10, front_of_plate_y-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
 				
 		PathStart( CUT );
 		PathM( cx = frontplate_calc_mid_width, cy = 0 );
@@ -1405,7 +1409,7 @@ void DrawCase()
 		
 		cx = top_plate_front_panel_max_x; // Where the top plate fits into the front panel.
 		PathL( cx, cy );	
-		cy = front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH;
+		cy = front_of_plate_y;
 		PathL( cx, cy );	
 		cx = top_plate_front_panel_min_x;
 		PathL( cx, cy );	
@@ -1426,7 +1430,9 @@ void DrawCase()
 
 		PathL( cx, screwycenter - mb_tongue_mm/2.0 );
 		
-		cy += face_plate_height- MATERIAL_THICKNESS/2;
+		//cy += face_plate_height- MATERIAL_THICKNESS/2;
+		cy = back_of_plate_y;
+		//tongue_offset
 		
 		PathL( cx, cy );
 		
