@@ -47,6 +47,8 @@
 // OKAY: Make faceplate go all the way to the front. -> front_plate_top_plate_extend_y 
 // OKAY: Why don't front holes line up?
 
+// TODO: Extend T a bit again
+// TODO: Fix GPU height
 
 // Notes:
 // * Pre-drill with .118
@@ -116,7 +118,7 @@ float crossbrace_panel_screw_offset = 10;
 #define NUT_WIDTH   6
 #define NUT_HEIGHT   .9
 #define T_DEPTH     5.5
-#define SCREW_EXTRA 0.0  // How much further the screw penetrates
+#define SCREW_EXTRA 1.5  // How much further the screw penetrates
 #define SCREW_WIDTH 3.05
 #define SCREW_WIDTH_T 4.03
 #endif
@@ -345,7 +347,7 @@ void DrawCase()
 	const float gpu_rail_mount_from_top = 30.4;
 	const float gpu_brace_bar_width = gpu_thick+MATERIAL_THICKNESS-12.75; /// why 12.75???
 	
-	float whole_crossbrace_height = 9 + 54.3 /* This is more like GPU height */ + 85-64+10; // Works with gpu_thick
+	float whole_crossbrace_height = 9 + 54.1 /* This is more like GPU height */ + 85-64+10; // Works with gpu_thick
 	float sidescrew_offset_y = 10;
 	float mb_tongue_spacing = (mb_tray_length - (num_mb_tongues*mb_tongue_mm)) / num_mb_tongues;
 
@@ -358,7 +360,7 @@ void DrawCase()
 	float crossbrace_tongue_center = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 
 
-	StartSVG( 809.6, 457 );
+	StartSVG( 809.6+300, 457 );
 	
 	if( DO_CASE_1 )
 	{
@@ -896,7 +898,11 @@ void DrawCase()
 				PathL( cx, cy );
 				cy = MATERIAL_THICKNESS;
 				PathL( cx, cy );
-				cx -= ((float)top_plate_front_panel_max_x - (float)top_plate_front_panel_min_x)/2;
+//				cx -= ((float)top_plate_front_panel_max_x - (float)top_plate_front_panel_min_x)/2;
+//				InsertT( cx, cy, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				cx -= 10;
+				InsertT( cx, cy, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				cx -= ((float)top_plate_front_panel_max_x - (float)top_plate_front_panel_min_x) - 20;
 				InsertT( cx, cy, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 				cx = (float)top_plate_front_panel_min_x-MATERIAL_THICKNESS;
@@ -1368,7 +1374,8 @@ void DrawCase()
 		Circle( CUT, frontplate_calc_mid_width/2 + MATERIAL_THICKNESS/2, FRONTPLATE_BASEWIDTH+face_plate_height+MATERIAL_THICKNESS/2-MATERIAL_THICKNESS- MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
 
 		// Hole to front plate.
-		Circle( CUT, top_plate_front_panel_min_x + ((float)top_plate_front_panel_max_x - (float)top_plate_front_panel_min_x)/2.0, front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
+		Circle( CUT, top_plate_front_panel_min_x + 10, front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
+		Circle( CUT, top_plate_front_panel_max_x - 10, front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
 				
 		PathStart( CUT );
 		PathM( cx = frontplate_calc_mid_width, cy = 0 );
