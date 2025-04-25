@@ -47,8 +47,11 @@
 // OKAY: Make faceplate go all the way to the front. -> front_plate_top_plate_extend_y 
 // OKAY: Why don't front holes line up?
 
-// TODO: Extend T a bit again
-// TODO: Fix GPU height
+// OKAY: Extend T a bit again
+// OKAY?: Fix GPU height
+
+// TODO: Top plate extends too far forward.
+// TODO: Side panel on left side missing tongue hole
 
 // Notes:
 // * Pre-drill with .118
@@ -86,7 +89,7 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 
 #define MATERIAL_THICKNESS 8.9
-#define TOOTH_WIDTH 30
+#define TOOTH_WIDTH 30.0
 #define EAR 0.5
 #define M3_SCREW_WIDTH 3.2 // For PSU+USB connectors
 #define M3_MOUNTING_SCREW_WIDTH 4.2 // Inserts for Mobo Mount
@@ -129,19 +132,19 @@ float crossbrace_panel_screw_offset = 10;
 // After some experimenting, would just be nice if this was bigger.
 #define CUT_CLEARANCE_TONGUE 0.0
 
-#define GHEXSIZE 9
+#define GHEXSIZE 9.0
 
 #define BACKPLATE_DOES_NOT_GO_BEHIND_CPU 1
 
 
 
-#define top_plate_front_panel_max_x 200
-#define top_plate_front_panel_min_x 131
+#define top_plate_front_panel_max_x 200.0
+#define top_plate_front_panel_min_x 131.0
 
 
 #define BACKPLATE_GOES_UP 1
 #define BACKPLATE_PARTIAL_TONGUE MATERIAL_THICKNESS
-#define TOP_PLATE_BACK_SCREW_OFFSET 125
+#define TOP_PLATE_BACK_SCREW_OFFSET 125.0
 
 #define PSU_IS_ON_FRONT 1
 
@@ -1053,16 +1056,27 @@ void DrawCase()
 
 				if( BACKPLATE_GOES_UP && i == 0 )
 				{
-//crossbrace_tongue_center/2-sidescrew_offset_y; 
-					//DrawBox( material, cx-twplusclear, cy-matplusclear, cx+0, cy+matplusclear, EAR );
-					if( !BACKPLATE_DOES_NOT_GO_BEHIND_CPU )
-						Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE, cy, SCREW_WIDTH/2 );
+					if( side == 0 )
+					{
+						//crossbrace_tongue_center/2-sidescrew_offset_y; 
+						//DrawBox( material, cx-twplusclear, cy-matplusclear, cx+0, cy+matplusclear, EAR );
+						if( !BACKPLATE_DOES_NOT_GO_BEHIND_CPU )
+							Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE, cy, SCREW_WIDTH/2 );
+					}
 					face_plate_height = sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE;
 				}
 				else
 				{
-					DrawBox( material, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
-					Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y, cy, SCREW_WIDTH/2 );
+					if( BACKPLATE_GOES_UP && i == 0 && side == 1 )
+					{
+						// Nudge screw down a tad on the right side.
+						Circle( material, crossbrace_tongue_center/2 , cy, SCREW_WIDTH/2 );
+					}
+					else
+					{
+						Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y, cy, SCREW_WIDTH/2 );
+						DrawBox( material, cx-twplusclear, cy-matplusclear, cx+twplusclear, cy+matplusclear, EAR );
+					}
 				}
 			}
 			
@@ -1157,7 +1171,8 @@ void DrawCase()
 
 			{
 				cy -= FRONTPLATE_OFFSET;
-				front_plate_top_plate_extend_y = FRONTPLATE_OFFSET;
+				front_plate_top_plate_extend_y = FRONTPLATE_OFFSET  - (MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE);
+				//matplusclear = MATERIAL_THICKNESS/2 + CUT_CLEARANCE_TONGUE
 				face_plate_height -= cy;
 				PathL( cx, cy );
 				cx += MATERIAL_THICKNESS;
@@ -1236,6 +1251,7 @@ void DrawCase()
 	{
 		centerx = 337.7;
 		centery = 150;
+		
 
 		//Signature
 		float lateral_width = mb_tray_length  + MATERIAL_THICKNESS*1.5;
