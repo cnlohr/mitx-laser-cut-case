@@ -32,15 +32,21 @@
 // OKAY: Move T 0.5mm toward surface.
 
 // TODO: Consider flipping PSU to front. 
-// TODO: Make it so the back can connect or be pulled off by only pulling upward.
-// TODO: Make sure back piece has a lot of clearance for the CPU power connector.
-// TODO: Increase side height by 10mm
-// TODO: Make top brace brace around CPU cooler + over GPU.
-// TODO: Make Motherboard plate use 120 LEDs/m (or less)
-// TODO: Widen aperture for motherboard LEDs to 4.8mm.
-// TODO: Make back pull-off-able.
-// TODO: Shrink front-part of USB-C connector.
-// TODO: Move power button, maybe tighter with the USB connectors?
+// OKAY: Make it so the back can connect or be pulled off by only pulling upward.
+// OKAY: Make sure back piece has a lot of clearance for the CPU power connector.
+// OKAY: Increase side height by 10mm
+// OKAY: Make top brace brace around CPU cooler + over GPU.
+// OKAY: Make Motherboard plate use 120 LEDs/m (or less)
+// OKAY: Widen aperture for motherboard LEDs to 4.8mm.
+// OKAY: Make back pull-off-able.
+// OKAY: Shrink front-part of USB-C connector.
+// OKAY: Move power button, maybe tighter with the USB connectors?
+// OKAY: Clearance around CPU is 135-140mm
+// OKAY: Make top plate mesh with side/top.
+
+// OKAY: Make faceplate go all the way to the front. -> front_plate_top_plate_extend_y 
+// OKAY: Why don't front holes line up?
+
 
 // Notes:
 // * Pre-drill with .118
@@ -85,8 +91,10 @@ void Normal2d( float * out, float * in ) { out[0] = -in[1]; out[1] = in[0]; }
 
 
 #define SCREW_IN_WIDTH 3.1
-#define CROSSBRACE_WIDTH 65
-#define CROSSBRACE_OFFSET 94
+#define FRONTPLATE_BASEWIDTH 65 // (Actually front-to-back)
+#define FRONTPLATE_OFFSET 94
+float frontplate_calc_mid_width = 0;
+
 float crossbrace_panel_screw_offset = 10;
 
 #if 0
@@ -123,11 +131,17 @@ float crossbrace_panel_screw_offset = 10;
 
 #define BACKPLATE_DOES_NOT_GO_BEHIND_CPU 1
 
+
+
+#define top_plate_front_panel_max_x 200
+#define top_plate_front_panel_min_x 131
+
+
 #define BACKPLATE_GOES_UP 1
 #define BACKPLATE_PARTIAL_TONGUE MATERIAL_THICKNESS
 #define TOP_PLATE_BACK_SCREW_OFFSET 125
 
-#define PSU_IS_ON_FRONT 0
+#define PSU_IS_ON_FRONT 1
 
 #define DO_CASE_1 1
 #define DO_CASE_2 1
@@ -233,6 +247,34 @@ void FillHexagons( const char * path, float cx, float cy, float sx, float sy, fl
 		PathClose();
 	}
 }
+//Holes for PSU
+void DrawPSU( float cx, float cy, float whole_crossbrace_height, float mb_tray_length, float sfx_psu_offset_y, int flip, float ox, float oy )
+{
+	if( flip )
+	{
+		Circle( CUT, cy-6.4, cx-6.3, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cy-6.4, cx-32.1, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cy-6.4, cx-57.9, M3_SCREW_WIDTH/2 ); // This one was covered in previous design
+		Circle( CUT, cy-119.1, cx-6.3, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cy-119.1, cx-32.1, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cy-119.1, cx-57.9, M3_SCREW_WIDTH/2 );
+		cx = whole_crossbrace_height-64/2+ox;
+		cy = mb_tray_length - 125.5/2 + sfx_psu_offset_y+oy;
+		DrawBox( CUT, cy-104/2, cx-56/2, cy+104/2, cx+56/2, 0 );
+	}
+	else
+	{
+		Circle( CUT, cx-6.3, cy-6.4, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cx-32.1, cy-6.4, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cx-57.9, cy-6.4, M3_SCREW_WIDTH/2 ); // This one was covered in previous design
+		Circle( CUT, cx-6.3, cy-119.1, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cx-32.1, cy-119.1, M3_SCREW_WIDTH/2 );
+		Circle( CUT, cx-57.9, cy-119.1, M3_SCREW_WIDTH/2 );
+		cx = whole_crossbrace_height-64/2;
+		cy = mb_tray_length - 125.5/2 + sfx_psu_offset_y;
+		DrawBox( CUT, cx-56/2, cy-104/2, cx+56/2, cy+104/2, 0 );
+	}
+}
 
 void DrawTest();
 void DrawCase();
@@ -251,6 +293,7 @@ void DrawCase()
 	//Motherboard Tray
 	centerx = MATERIAL_THICKNESS+CUT_CLEARANCE+1;
 	centery = 1;
+
 	
 	const float right_justify = 2.5;
 	const float mb_tongue_mm = 40;
@@ -263,10 +306,11 @@ void DrawCase()
 	const float top_tongue_offset = MATERIAL_THICKNESS/2+5;
 	const float middle_tongue_offset = 24;
 	const int num_leds_edge = 30;
-	const float led_mb_center_x = itx_x_offset+18;
-	const float led_mb_center_y = 156;
-	const float led_spacing = 8.3;
-	const float led_width = 4.25;
+	const float led_mb_center_x = itx_x_offset+17;
+	const float led_mb_center_y = 155;
+	const float led_spacing = 8.33;
+	const float led_width = 5.1;
+	const float led_lateral = 5.8;
 	const float led_nooj = 134;
 	const float led_noojy = 14;
 	
@@ -309,7 +353,8 @@ void DrawCase()
 	float insert_brace_t_x_bp_offset = -3.2;
 	// For GPU holder / bracket.
 	float backplate_mount_lateral = gpu_height + gpu_offset_x - gpu_rail_mount_from_top - MATERIAL_THICKNESS/2 - 64;
-				
+	float front_plate_top_plate_extend_y = 0;
+
 	float crossbrace_tongue_center = whole_crossbrace_height/2+crossbrace_tongue_offset_y;
 
 
@@ -336,16 +381,17 @@ void DrawCase()
 		//Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, middle_bracket_offset, SCREW_WIDTH/2 );  // No middle bracket
 		Circle( CUT, insert_brace_t_x + insert_brace_t_x_bp_offset, top_tongue_offset, SCREW_WIDTH/2 );
 
-
-		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 103, 112, 160, GHEXSIZE, 1 );
-		FillHexagons( CUT, 84+itx_x_offset-66+74.0, 103, 80, 170, GHEXSIZE, 1 );
-		FillHexagons( CUT, 84+itx_x_offset-66, 232, 220, 130, GHEXSIZE, 1 );
+		float hexagon_y_offset = -2;
+		
+		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 103+hexagon_y_offset, 112, 160, GHEXSIZE, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-66+74.0, 103+hexagon_y_offset, 80, 170, GHEXSIZE, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-66, 232+hexagon_y_offset, 220, 130, GHEXSIZE, 1 );
 		//Row between mobo and psu
 		//FillHexagons( CUT, 95, 174, 125, 20 );
 //		FillHexagons( CUT, 84+itx_x_offset-66, 38.6, 60, 30, GHEXSIZE, 1 ); // Back above access panel
-		FillHexagons( CUT, 84+itx_x_offset-66+18.6, 167.6, 44, 40, GHEXSIZE, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-66+18.6, 167.6+hexagon_y_offset, 44, 40, GHEXSIZE, 1 );
 
-		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 167.6, 94, 30, GHEXSIZE, 1 );
+		FillHexagons( CUT, 84+itx_x_offset-66-74.0, 167.6+hexagon_y_offset, 94, 30, GHEXSIZE, 1 );
 
 		
 		// Door for flash SSD Access window
@@ -354,7 +400,7 @@ void DrawCase()
 		float doorx = 33+itx_x_offset;
 		float doory = 86;
 		DrawBox( CUT, doorx-doorw/2, doory-doorh/2, doorx+doorw/2, doory+doorh/2, 0 );
-		FillHexagons( CUT, doorx-13.5, doory, 30, 100, GHEXSIZE, 1 );
+		FillHexagons( CUT, doorx-13.5, doory+hexagon_y_offset, 30, 100, GHEXSIZE, 1 );
 
 
 		// Add LEDs
@@ -370,20 +416,20 @@ void DrawCase()
 			switch( j )
 			{
 			case 0:
-				DrawBox( CUT, led_mb_center_x-led_line_width/2+leda, led_mb_center_y-led_width/2-led_nooj, 
-							  led_mb_center_x-led_line_width/2+ledb, led_mb_center_y+led_width/2-led_nooj, 0 );
+				DrawBox( CUT, led_mb_center_x-led_line_width/2+leda, led_mb_center_y-led_lateral/2-led_nooj, 
+							  led_mb_center_x-led_line_width/2+ledb, led_mb_center_y+led_lateral/2-led_nooj, 0 );
 				break;
 			case 1:
-				DrawBox( CUT, led_mb_center_x+led_line_width/2-led_width/2+led_noojy, led_mb_center_y-led_line_width/2+leda+(led_spacing-led_width)/2, 
-							  led_mb_center_x+led_line_width/2+led_width/2+led_noojy, led_mb_center_y-led_line_width/2+ledb+(led_spacing-led_width)/2, 0 );
+				DrawBox( CUT, led_mb_center_x+led_line_width/2-led_lateral/2+led_noojy, led_mb_center_y-led_line_width/2+leda+(led_spacing-led_width)/2, 
+							  led_mb_center_x+led_line_width/2+led_lateral/2+led_noojy, led_mb_center_y-led_line_width/2+ledb+(led_spacing-led_width)/2, 0 );
 				break;
 			case 2:
-				DrawBox( CUT, led_mb_center_x+led_line_width/2-leda, led_extra_bottom+led_mb_center_y-led_width/2+led_nooj, 
-							  led_mb_center_x+led_line_width/2-ledb, led_extra_bottom+led_mb_center_y+led_width/2+led_nooj, 0 );
+				DrawBox( CUT, led_mb_center_x+led_line_width/2-leda, led_extra_bottom+led_mb_center_y-led_lateral/2+led_nooj, 
+							  led_mb_center_x+led_line_width/2-ledb, led_extra_bottom+led_mb_center_y+led_lateral/2+led_nooj, 0 );
 				break;
 			case 3:
-				DrawBox( CUT, led_mb_center_x-led_line_width/2-led_width/2-led_noojy, led_mb_center_y+led_line_width/2-leda+(led_spacing-led_width)/2, 
-							  led_mb_center_x-led_line_width/2+led_width/2-led_noojy, led_mb_center_y+led_line_width/2-ledb+(led_spacing-led_width)/2, 0 );
+				DrawBox( CUT, led_mb_center_x-led_line_width/2-led_lateral/2-led_noojy, led_mb_center_y+led_line_width/2-leda+(led_spacing-led_width)/2, 
+							  led_mb_center_x-led_line_width/2+led_lateral/2-led_noojy, led_mb_center_y+led_line_width/2-ledb+(led_spacing-led_width)/2, 0 );
 				break;
 			}
 		}
@@ -481,7 +527,7 @@ void DrawCase()
 			{
 				centerx = mb_tray_width+MATERIAL_THICKNESS*3+.5+1;
 				centery = 30;
-				if( BACKPLATE_DOES_NOT_GO_BEHIND_CPU ) centerx = 520;
+				if( BACKPLATE_DOES_NOT_GO_BEHIND_CPU ) { centerx = 520; centery = 30; }
 			}
 			else if( plate == 1 )
 			{
@@ -491,7 +537,7 @@ void DrawCase()
 			else
 			{
 				centerx = mb_tray_width+MATERIAL_THICKNESS*3+.5+1;
-				centery = 220;
+				centery = 320;
 			}
 
 			// No more middle plate.  Instead draw a crossbrace.
@@ -553,13 +599,27 @@ void DrawCase()
 			}
 			if( plate == 2 )
 			{
-				FillHexagons( CUT, centerx-182.5, 15.5, 240, 18, GHEXSIZE, 0 );
 				if( !PSU_IS_ON_FRONT )
 				{
+					FillHexagons( CUT, centerx-182.5, 15.5, 240, 18, GHEXSIZE, 0 );
 					FillHexagons( CUT, centerx-100, 64, 110, 75, GHEXSIZE, 0 );
+				}
+				else
+				{
+					FillHexagons( CUT, centerx-263.5, 20.5, 100, 18, GHEXSIZE, 0 );
+					FillHexagons( CUT, centerx-84.5, 20.5, 100, 18, GHEXSIZE, 0 );
 				}
 			}
 
+
+			#if PSU_IS_ON_FRONT
+			if( plate == 2 )
+			{
+				float ox = 0;
+				float oy = 9;
+				DrawPSU( whole_crossbrace_height-0.5 + ox, mb_tray_length + sfx_psu_offset_y + oy, whole_crossbrace_height, mb_tray_length, sfx_psu_offset_y, 1, ox, oy );
+			}
+			#endif
 
 
 			// Front plate.
@@ -567,10 +627,10 @@ void DrawCase()
 			{
 
 				// Power button
-				Circle( CUT, 150, 78, 16.1/2 );
+				Circle( CUT, 158, 78, 16.1/2 );
 
 				// Add USB Type C Mount TODO.
-				float ucx = 150;
+				float ucx = 158;
 				float ucy = 62;
 				cx = ucx-18.6/2;
 				cy = ucy;
@@ -608,7 +668,7 @@ void DrawCase()
 				{
 					for( ucy = 35; ucy < 50; ucy += 14 )
 					{
-						ucx = 150;
+						ucx = 158;
 						cx = ucx-21.5/2 - (uq*100);
 						cy = ucy+(uq*15);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
@@ -616,27 +676,10 @@ void DrawCase()
 						cy = ucy+(uq*15);
 						Circle( CUT, cx, cy, M3_SCREW_WIDTH/2 );
 						cx =ucx - (uq*100);
+						
+						float revmargin = uq==0?.5:0;
 
-#if 0
-						// Was a round aperture for the USB but this was ugly.
-						const float uround3_width = 10;
-						const float uround3_radius = 5;
-						phi = 0;
-						PathStart( CUT );
-						for( ; phi < 3.14159*2; phi += 0.001 )
-						{
-							float cx = cos( phi )*uround3_radius;
-							float cy = sin( phi )*uround3_radius+(uq*15);
-							if( cx < 0 )
-								cx -= uround3_width/2;
-							else
-								cx += uround3_width/2;
-							cx += - (uq*100);
-							PathL( cx + ucx, cy + ucy );
-						}
-						PathClose();
-#endif
-						DrawBox( CUT, cx-15/2.0, cy-8/2.0, cx+15/2.0, cy+8/2.0, 0 );
+						DrawBox( CUT, cx-15/2.0+revmargin, cy-8/2.0+revmargin, cx+15/2.0-revmargin, cy+8/2.0-revmargin, 0 );
 
 					}
 				}
@@ -644,7 +687,7 @@ void DrawCase()
 				// Draw outline around extra USB spacer
 				{
 					PathStart( CUT );
-					cx = 50;
+					cx = 58;
 					cy = 57;
 					PathL( cx + -18, cy -14 );
 					PathL( cx + 18, cy -14 );
@@ -671,13 +714,12 @@ void DrawCase()
 
 			if( BACKPLATE_GOES_UP && plate == 0 )
 			{
-//				cy += crossbrace_tongue_center/2-mb_tongue_mm/2;
-				PathL( cx, cy );
-				//PathL( cx+EAR, cy+EAR );
 				PathL( cx, cy );
 				PathL( cx-=MATERIAL_THICKNESS, cy );
+				frontplate_calc_mid_width = -cx;
 				PathL( cx, cy += BACKPLATE_PARTIAL_TONGUE ); // Not
 				PathL( cx+=MATERIAL_THICKNESS, cy );
+				
 				cy+=crossbrace_tongue_center/2-sidescrew_offset_y;
 				InsertT( cx, cy, 1, 0, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cy+=sidescrew_offset_y;
@@ -787,6 +829,8 @@ void DrawCase()
 				InsertT( insert_brace_t_x+insert_brace_t_x_bp_offset, cy, 0, -1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 				cx = insert_brace_t_x+ 2;
 				PathL( cx, cy );
+				
+				frontplate_calc_mid_width += cx;
 #if !BACKPLATE_DOES_NOT_GO_BEHIND_CPU
 				cy -= 31.0; //
 				PathL( cx, cy );
@@ -818,6 +862,17 @@ void DrawCase()
 				cy = 0;
 				PathL( cx, cy );
 
+				float mcx = cx / 2;
+				
+				PathL( mcx+mb_tongue_mm/2.0, cy  );
+				PathL( mcx+mb_tongue_mm/2.0, cy+MATERIAL_THICKNESS  );
+				PathL( mcx+mb_tongue_mm/2.0+EAR, cy+MATERIAL_THICKNESS+EAR  );
+				PathL( mcx+mb_tongue_mm/2.0, cy+MATERIAL_THICKNESS  );
+				InsertT( mcx, cy+MATERIAL_THICKNESS, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+				PathL( mcx-mb_tongue_mm/2.0, cy+MATERIAL_THICKNESS  );
+				PathL( mcx-mb_tongue_mm/2.0-EAR, cy+MATERIAL_THICKNESS+EAR  );
+				PathL( mcx-mb_tongue_mm/2.0, cy+MATERIAL_THICKNESS  );
+				PathL( mcx-mb_tongue_mm/2.0, cy );
 			}
 			else
 			{
@@ -837,6 +892,18 @@ void DrawCase()
 				cy = 0;
 				PathL( cx, cy );
 
+				cx = top_plate_front_panel_max_x-MATERIAL_THICKNESS;
+				PathL( cx, cy );
+				cy = MATERIAL_THICKNESS;
+				PathL( cx, cy );
+				cx -= ((float)top_plate_front_panel_max_x - (float)top_plate_front_panel_min_x)/2;
+				InsertT( cx, cy, 0, 1, SCREW_WIDTH_T, NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
+
+				cx = (float)top_plate_front_panel_min_x-MATERIAL_THICKNESS;
+				PathL( cx, cy );
+				cy = 0;
+				PathL( cx, cy );
+				
 				if( YES_HANDLE )
 				{
 					if( plate != 1 )
@@ -865,7 +932,7 @@ void DrawCase()
 		for( mb = 0; mb < 2; mb++ )
 		{
 			centerx = 590;
-			centery = 62+mb*30;
+			centery = 72+mb*30;
 			
 			float support_material_outside_t = 7;
 			float mounting_bar_thick = 12.5;
@@ -889,7 +956,7 @@ void DrawCase()
 			cy = gpu_brace_bar_width+support_material_outside_t;
 			PathL( -cy, cx );
 			cx += mounting_bar_thick;  // crossbar depth
-			cx += mounting_bar_extraA*(mb==0?0:1);
+			cx += mounting_bar_extraA*1; //(mb==0?0:1);
 			PathL( -cy, cx );
 			cy -= support_material_outside_t;
 			//InsertT( -cy, cx, 0, -1, SCREW_WIDTH, NUT_WIDTH, NUT_HEIGHT, T_DEPTH+5, 2.5 );
@@ -902,7 +969,7 @@ void DrawCase()
 			
 			cy -= 4.8;
 			PathL( -cy, cx );
-			cx -= mounting_bar_extraA*(mb==0?0:1);
+			cx -= mounting_bar_extraA*1; //*(mb==0?0:1);
 			PathL( -cy, cx );
 			cy -= gpu_brace_bar_width-4.8*2;
 			PathL( -cy, cx );
@@ -945,7 +1012,7 @@ void DrawCase()
 			float cx = 0;
 			float cy = 0;
 			centerx = (side==0)?316:316;//+side*(whole_crossbrace_height+25)+300;
-			centery = (side==0)?-640:-318;
+			centery = (side==0)?-1040:-318;
 
 			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*4/4, SCREW_WIDTH/2 );
 			Circle( CUT, whole_crossbrace_height+MATERIAL_THICKNESS/2, (mb_tongue_mm+mb_tongue_spacing)*8/4, SCREW_WIDTH/2 );
@@ -982,7 +1049,8 @@ void DrawCase()
 				{
 //crossbrace_tongue_center/2-sidescrew_offset_y; 
 					//DrawBox( material, cx-twplusclear, cy-matplusclear, cx+0, cy+matplusclear, EAR );
-					Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE, cy, SCREW_WIDTH/2 );
+					if( !BACKPLATE_DOES_NOT_GO_BEHIND_CPU )
+						Circle( material, crossbrace_tongue_center/2 -sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE, cy, SCREW_WIDTH/2 );
 					face_plate_height = sidescrew_offset_y + BACKPLATE_PARTIAL_TONGUE;
 				}
 				else
@@ -994,18 +1062,10 @@ void DrawCase()
 			
 			if( side == 0 )
 			{
-				//Holes for PSU
-				float cx = whole_crossbrace_height-0.5; // -0.5 = move SFX up by 0.5mm
-				float cy = mb_tray_length + sfx_psu_offset_y;
-				Circle( CUT, cx-6.3, cy-6.4, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-32.1, cy-6.4, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-57.9, cy-6.4, M3_SCREW_WIDTH/2 ); // This one was covered in previous design
-				Circle( CUT, cx-6.3, cy-119.1, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-32.1, cy-119.1, M3_SCREW_WIDTH/2 );
-				Circle( CUT, cx-57.9, cy-119.1, M3_SCREW_WIDTH/2 );
-				cx = whole_crossbrace_height-64/2;
-				cy = mb_tray_length - 125.5/2 + sfx_psu_offset_y;
-				DrawBox( CUT, cx-56/2, cy-104/2, cx+56/2, cy+104/2, 0 );
+				if( !PSU_IS_ON_FRONT )
+				{
+					DrawPSU( whole_crossbrace_height-0.5, mb_tray_length + sfx_psu_offset_y, whole_crossbrace_height, mb_tray_length, sfx_psu_offset_y, 0, 0, 0 );
+				}
 			}
 			
 			if( side == 1 )
@@ -1017,9 +1077,13 @@ void DrawCase()
 			{
 				FillHexagons( CUT, (whole_crossbrace_height)/2.0-4+14, (top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+6, 70, 150, GHEXSIZE, 0 );
 				FillHexagons( CUT,
-					(whole_crossbrace_height)/2.0-4+4.8,
-					(top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+86,
-					50, 40, GHEXSIZE, 1 );
+					(whole_crossbrace_height)/2.0-4+4.8+(PSU_IS_ON_FRONT?-9.5:0),
+					(top_tongue_offset+(top_tongue_offset + bottom_tongue_offset)/2)/2+86+(PSU_IS_ON_FRONT?17.5:0),
+					PSU_IS_ON_FRONT?60:50, PSU_IS_ON_FRONT?100:40, GHEXSIZE, 1 );
+				if( PSU_IS_ON_FRONT )
+				{
+					FillHexagons( CUT, (whole_crossbrace_height)/2.0-4+4.5, +267, 70, 80, GHEXSIZE, 1 );
+				}
 			}
 			//FillHexagons( CUT, (whole_crossbrace_height)/2.0-4, 177-1, 30, 30, GHEXSIZE, 0 );
 			
@@ -1079,13 +1143,15 @@ void DrawCase()
 
 			PathL( cx, cy );
 			
-			#if defined( CROSSBRACE_WIDTH ) && ( !defined( nomiddleplate ) || !nomiddleplate )
+			#if defined( FRONTPLATE_BASEWIDTH ) && ( !defined( nomiddleplate ) || !nomiddleplate )
 			#error Cant have a crossbrace with a middle plate
 			#endif
 			//if( side == 0 )
 
+
 			{
-				cy -= CROSSBRACE_OFFSET;
+				cy -= FRONTPLATE_OFFSET;
+				front_plate_top_plate_extend_y = FRONTPLATE_OFFSET;
 				face_plate_height -= cy;
 				PathL( cx, cy );
 				cx += MATERIAL_THICKNESS;
@@ -1117,12 +1183,24 @@ void DrawCase()
 					cy = savecy;
 				}
 				
-				cy -= CROSSBRACE_WIDTH - crossbrace_panel_screw_offset;
+				cy -= FRONTPLATE_BASEWIDTH - crossbrace_panel_screw_offset;
 				InsertT( cx, cy, 1, 0, -SCREW_WIDTH_T, -NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 
 				if( BACKPLATE_GOES_UP && side == 1 )
 				{
+					float mcx = cy - TOP_PLATE_BACK_SCREW_OFFSET/2.0;
+					
+					PathL( cx, mcx + mb_tongue_mm/2.0  );
+					PathL( cx+EAR, mcx + mb_tongue_mm/2.0-EAR );
+					PathL( cx, mcx + mb_tongue_mm/2.0  );
+					PathL( cx-MATERIAL_THICKNESS, mcx + mb_tongue_mm/2.0 );
+					PathL( cx-MATERIAL_THICKNESS, mcx - mb_tongue_mm/2.0 );
+					PathL( cx, mcx - mb_tongue_mm/2.0  );
+					PathL( cx+EAR, mcx - mb_tongue_mm/2.0+EAR );
+					PathL( cx, mcx - mb_tongue_mm/2.0  );
+
 					cy -= TOP_PLATE_BACK_SCREW_OFFSET;
+
 					InsertT( cx, cy, 1, 0, -SCREW_WIDTH_T, -NUT_WIDTH, NUT_HEIGHT, T_DEPTH, SCREW_EXTRA );
 					cy -= crossbrace_panel_screw_offset;
 				}
@@ -1150,7 +1228,7 @@ void DrawCase()
 
 	if( nomiddleplate ) // face plate
 	{
-		centerx = 340;
+		centerx = 337.7;
 		centery = 150;
 
 		//Signature
@@ -1203,7 +1281,7 @@ void DrawCase()
 				ssplace += ss;//(lx == 0 || lx == 2 || lx == 3 ) ? (ss-edgesqueeze) : ss;
 				if( logo[lx+ly*5] == 0 ) continue;
 				float tx =    lateral_width/2.0 + usessplace  +sig_offset_x;
-				float ty = CROSSBRACE_WIDTH/2.0 + (ly-1) * (ss-edgesqueeze);
+				float ty = FRONTPLATE_BASEWIDTH/2.0 + (ly-1) * (ss-edgesqueeze);
 				
 				PathStart( ETCH );
 				float theta;
@@ -1237,39 +1315,39 @@ void DrawCase()
 			float fm = mirror ? -1 : 1;
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 - fm * ssa );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* -2, CROSSBRACE_WIDTH/2.0 + ss*fm*0.5 + fm * ssa );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* -2, FRONTPLATE_BASEWIDTH/2.0 + ss*fm*0.5 - fm * ssa );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* -2, FRONTPLATE_BASEWIDTH/2.0 + ss*fm*0.5 + fm * ssa );
 			PathStop();
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* -2 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* -2 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* -2 + ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* -2 - ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
 			PathStop();
 
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* 1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* 1, FRONTPLATE_BASEWIDTH/2.0 +ss*fm*0.5 - fm * ssa );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* 1, FRONTPLATE_BASEWIDTH/2.0 +ss*fm*0.5 + fm * ssa );
 			PathStop();
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* 1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-			PathL( sig_offset_x+lateral_width/2.0 + ss* 1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* 1 - ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss* 1 + ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
 			PathStop();
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 - fm * ssa );
-			PathL( sig_offset_x+lateral_width/2.0 + ss*-1, CROSSBRACE_WIDTH/2.0 +ss*fm*0.5 + fm * ssa );
+			PathL( sig_offset_x+lateral_width/2.0 + ss*-1, FRONTPLATE_BASEWIDTH/2.0 +ss*fm*0.5 - fm * ssa );
+			PathL( sig_offset_x+lateral_width/2.0 + ss*-1, FRONTPLATE_BASEWIDTH/2.0 +ss*fm*0.5 + fm * ssa );
 			PathStop();
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss*-1 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-			PathL( sig_offset_x+lateral_width/2.0 + ss*-1 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss*-1 - ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss*-1 + ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
 			PathStop();
 
 			PathStart( ETCH );
-			PathL( sig_offset_x+lateral_width/2.0 + ss*0 - ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
-			PathL( sig_offset_x+lateral_width/2.0 + ss*0 + ssa, CROSSBRACE_WIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss*0 - ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
+			PathL( sig_offset_x+lateral_width/2.0 + ss*0 + ssa, FRONTPLATE_BASEWIDTH/2.0 +ss/2*fm );
 			PathStop();
 
 		}
@@ -1277,31 +1355,69 @@ void DrawCase()
 #endif
 
 		centerx -= MATERIAL_THICKNESS;
+		
+		float screwycenter = ((crossbrace_panel_screw_offset - TOP_PLATE_BACK_SCREW_OFFSET) + crossbrace_panel_screw_offset)/2.0;
 		Circle( CUT, MATERIAL_THICKNESS/2, crossbrace_panel_screw_offset - TOP_PLATE_BACK_SCREW_OFFSET, SCREW_WIDTH/2 );
 		Circle( CUT, MATERIAL_THICKNESS/2, crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
-		Circle( CUT, MATERIAL_THICKNESS/2, CROSSBRACE_WIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
-		Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, CROSSBRACE_WIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
+		Circle( CUT, MATERIAL_THICKNESS/2, FRONTPLATE_BASEWIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
+		
+		Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, FRONTPLATE_BASEWIDTH-crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
 		Circle( CUT, lateral_width-MATERIAL_THICKNESS*.5, crossbrace_panel_screw_offset, SCREW_WIDTH/2 );
 
-		#define FACEPLATE_MAIN_WIDTH 100
+		// BAck plate hole.
+		Circle( CUT, frontplate_calc_mid_width/2 + MATERIAL_THICKNESS/2, FRONTPLATE_BASEWIDTH+face_plate_height+MATERIAL_THICKNESS/2-MATERIAL_THICKNESS- MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
 
+		// Hole to front plate.
+		Circle( CUT, top_plate_front_panel_min_x + ((float)top_plate_front_panel_max_x - (float)top_plate_front_panel_min_x)/2.0, front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH-MATERIAL_THICKNESS/2, SCREW_WIDTH/2 );
+				
 		PathStart( CUT );
-		PathM( cx = FACEPLATE_MAIN_WIDTH, cy = 0 );
+		PathM( cx = frontplate_calc_mid_width, cy = 0 );
 		cx = lateral_width;
 		PathL( cx, cy );
-		cy += CROSSBRACE_WIDTH;
+		cy += FRONTPLATE_BASEWIDTH;
 		PathL( cx, cy );			
 		cx -= lateral_width;
+		//PathL( cx, cy );	
+		float ocy = cy;
+		
+		cx = top_plate_front_panel_max_x; // Where the top plate fits into the front panel.
 		PathL( cx, cy );	
+		cy = front_plate_top_plate_extend_y+FRONTPLATE_BASEWIDTH;
+		PathL( cx, cy );	
+		cx = top_plate_front_panel_min_x;
+		PathL( cx, cy );	
+		cy = ocy;
+		PathL( cx, cy );	
+
+
 		cx = 0;
 		PathL( cx, cy );
-		cy += face_plate_height;
+		
+		PathL( cx, screwycenter + mb_tongue_mm/2.0 );
+		PathL( cx+MATERIAL_THICKNESS, screwycenter + mb_tongue_mm/2.0 );
+		PathL( cx+MATERIAL_THICKNESS+EAR, screwycenter + mb_tongue_mm/2.0+EAR );
+		PathL( cx+MATERIAL_THICKNESS, screwycenter + mb_tongue_mm/2.0 );
+		PathL( cx+MATERIAL_THICKNESS, screwycenter - mb_tongue_mm/2.0 );
+		PathL( cx+MATERIAL_THICKNESS+EAR, screwycenter - mb_tongue_mm/2.0-EAR );
+		PathL( cx+MATERIAL_THICKNESS, screwycenter - mb_tongue_mm/2.0 );
 
-		XXX TODO Make this back mesh with back plate.
-
-
+		PathL( cx, screwycenter - mb_tongue_mm/2.0 );
+		
+		cy += face_plate_height- MATERIAL_THICKNESS/2;
+		
 		PathL( cx, cy );
-		cx = FACEPLATE_MAIN_WIDTH;
+		
+		float mcx = frontplate_calc_mid_width/2 + MATERIAL_THICKNESS/2;
+		PathL( mcx- mb_tongue_mm/2.0, cy  );
+		PathL( mcx- mb_tongue_mm/2.0+EAR, cy+EAR  );
+		PathL( mcx- mb_tongue_mm/2.0, cy  );
+		PathL( mcx- mb_tongue_mm/2.0, cy -MATERIAL_THICKNESS );
+		PathL( mcx+ mb_tongue_mm/2.0, cy -MATERIAL_THICKNESS );
+		PathL( mcx+ mb_tongue_mm/2.0, cy  );
+		PathL( mcx+ mb_tongue_mm/2.0-EAR, cy+EAR  );
+		PathL( mcx+ mb_tongue_mm/2.0, cy  );
+
+		cx = frontplate_calc_mid_width;
 		PathL( cx, cy );
 
 		PathClose();
